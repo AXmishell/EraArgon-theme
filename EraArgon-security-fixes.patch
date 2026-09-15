@@ -1,0 +1,235 @@
+diff --git a/inc/fun/comment/ajax.php b/inc/fun/comment/ajax.php
+index 082502b..371b58a 100644
+--- a/inc/fun/comment/ajax.php
++++ b/inc/fun/comment/ajax.php
+@@ -9,6 +9,9 @@ function argon_get_comment_edit_history(){
+ 		)));
+ 	}
+ 	$editHistory = json_decode(get_comment_meta($id, "comment_edit_history", true));
++	if (!is_array($editHistory)){
++		$editHistory = array();
++	}
+ 	$editHistory = array_reverse($editHistory);
+ 	$res = "";
+ 	$position = count($editHistory) + 1;
+@@ -23,7 +26,7 @@ function argon_get_comment_edit_history(){
+ 						" . ($edition -> isfirst ? "<span class='badge badge-primary badge-admin'>" . __("最初版本", 'argon') . "</span>" : "") . "
+ 					</div>
+ 					<div class='comment-edit-history-time'>" . date('Y-m-d H:i:s', $edition -> time) . "</div>
+-					<div class='comment-edit-history-content'>" . str_replace("\n", "</br>", $edition -> content) . "</div>
++					<div class='comment-edit-history-content'>" . nl2br(esc_html($edition -> content)) . "</div>
+ 				</div>";
+ 	}
+ 	exit(json_encode(array(
+@@ -145,11 +148,11 @@ function argon_user_edit_comment(){
+ 			$editHistory = array();
+ 		}
+ 		array_push($editHistory, array(
+-			'content' => htmlspecialchars(stripslashes($contentSource)),
++			'content' => stripslashes($contentSource),
+ 			'time' => time(),
+ 			'isfirst' => false
+ 		));
+-		update_comment_meta($id, "comment_edit_history", addslashes(json_encode($editHistory, JSON_UNESCAPED_UNICODE)));
++		update_comment_meta($id, "comment_edit_history", json_encode($editHistory, JSON_UNESCAPED_UNICODE));
+ 		exit(json_encode(array(
+ 			'status' => 'success',
+ 			'msg' => __('编辑评论成功', 'argon'),
+diff --git a/inc/fun/comment/notify.php b/inc/fun/comment/notify.php
+index d51d873..e40f6a6 100644
+--- a/inc/fun/comment/notify.php
++++ b/inc/fun/comment/notify.php
+@@ -110,7 +110,7 @@ function argon_post_comment_updatemetas($id){
+ 		'time' => time(),
+ 		'isfirst' => true
+ 	));
+-	update_comment_meta($id, "comment_edit_history", addslashes(json_encode($editHistory, JSON_UNESCAPED_UNICODE)));
++	update_comment_meta($id, "comment_edit_history", json_encode($editHistory, JSON_UNESCAPED_UNICODE));
+ 	//是否启用 Markdown
+ 	if ($_POST['use_markdown'] == 'true' && get_option("argon_comment_allow_markdown") != "false"){
+ 		update_comment_meta($id, "use_markdown", "true");
+diff --git a/inc/fun/post-extra-meta-editor.php b/inc/fun/post-extra-meta-editor.php
+index 06ded65..e6e5c45 100644
+--- a/inc/fun/post-extra-meta-editor.php
++++ b/inc/fun/post-extra-meta-editor.php
+@@ -283,7 +283,21 @@ function argon_regenerate_ai_post_summary(): void {
+ 		return;
+ 	}
+ 	header('Content-Type:application/json; charset=utf-8');
+-	$post_id = intval($_POST["post_id"]);
++	if (!isset($_POST['post_id'])){
++		status_header(400);
++		exit(json_encode(array(
++			'status' => 'failed',
++			'message' => 'invalid_request'
++		)));
++	}
++	$post_id = intval($_POST['post_id']);
++	if (!current_user_can('edit_post', $post_id)){
++		status_header(403);
++		exit(json_encode(array(
++			'status' => 'failed',
++			'message' => 'forbidden'
++		)));
++	}
+ 
+     argon_update_ai_post_meta( $post_id );
+ 
+@@ -291,5 +305,4 @@ function argon_regenerate_ai_post_summary(): void {
+         'status' => 'success'
+     )));
+ }
+-add_action('wp_ajax_regenerate_ai_post_summary', 'argon_regenerate_ai_post_summary');
+-add_action('wp_ajax_nopriv_regenerate_ai_post_summary', 'argon_regenerate_ai_post_summary');
+\ No newline at end of file
++add_action('wp_ajax_regenerate_ai_post_summary', 'argon_regenerate_ai_post_summary');
+\ No newline at end of file
+diff --git a/inc/fun/post.php b/inc/fun/post.php
+index 30b2660..26b361f 100644
+--- a/inc/fun/post.php
++++ b/inc/fun/post.php
+@@ -380,6 +380,8 @@ function argon_the_content_filter($content){
+ 	global $post;
+ 	$custom_css = get_post_meta($post -> ID, 'argon_custom_css', true);
+ 	if (!empty($custom_css)){
++		//防止自定义 CSS 逃逸 <style> 上下文导致存储型 XSS
++		$custom_css = preg_replace('#</\s*style#i', '', $custom_css);
+ 		$content .= "<style>" . $custom_css . "</style>";
+ 	}
+ 
+diff --git a/inc/fun/shortcodes/content.php b/inc/fun/shortcodes/content.php
+index 11d50d7..bdb9d88 100644
+--- a/inc/fun/shortcodes/content.php
++++ b/inc/fun/shortcodes/content.php
+@@ -122,11 +122,11 @@ function argon_shortcode_alert($attr,$content=""){
+ 	}
+ 	$out .= "'>";
+ 	if (isset($attr['icon'])){
+-		$out .= "<span class='alert-inner--icon'><i class='fa fa-" . $attr['icon'] . "'></i></span>";
++		$out .= "<span class='alert-inner--icon'><i class='fa fa-" . esc_attr($attr['icon']) . "'></i></span>";
+ 	}
+ 	$out .= "<span class='alert-inner--text'>";
+ 	if (isset($attr['title'])){
+-		$out .= "<strong>" . $attr['title'] . "</strong> ";
++		$out .= "<strong>" . esc_html($attr['title']) . "</strong> ";
+ 	}
+ 	$out .= $content . "</span></div>";
+ 	return $out;
+@@ -166,9 +166,9 @@ function argon_shortcode_admonition($attr,$content=""){
+ 	if (isset($attr['title'])){
+ 		$out .= "<div class='admonition-title'>";
+ 		if (isset($attr['icon'])){
+-			$out .= "<i class='fa fa-" . $attr['icon'] . "'></i> ";
++			$out .= "<i class='fa fa-" . esc_attr($attr['icon']) . "'></i> ";
+ 		}
+-		$out .= $attr['title'] . "</div>";
++		$out .= esc_html($attr['title']) . "</div>";
+ 	}
+ 	if ($content != ''){
+ 		$out .= "<div class='admonition-body'>" . $content . "</div>";
+@@ -223,9 +223,9 @@ function argon_shortcode_collapse_block($attr,$content=""){
+ 
+ 	$out .= "<div class='collapse-block-title'>";
+ 	if (isset($attr['icon'])){
+-		$out .= "<i class='fa fa-" . $attr['icon'] . "'></i> ";
++		$out .= "<i class='fa fa-" . esc_attr($attr['icon']) . "'></i> ";
+ 	}
+-	$out .= "<span class='collapse-block-title-inner'>" . $title . "</span><i class='collapse-icon fa fa-angle-down'></i></div>";
++	$out .= "<span class='collapse-block-title-inner'>" . esc_html($title) . "</span><i class='collapse-icon fa fa-angle-down'></i></div>";
+ 
+ 	$out .= "<div class='collapse-block-body'";
+ 	if ($collapsed != 'false'){
+@@ -281,7 +281,7 @@ function argon_shortcode_hidden($attr,$content=""){
+ 	}
+ 	$out .= "'";
+ 	if ($tip != ''){
+-		$out .= " title='" . $tip ."'";
++		$out .= " title='" . esc_attr($tip) ."'";
+ 	}
+ 	$out .= ">" . $content . "</span>";
+ 	return $out;
+diff --git a/inc/fun/shortcodes/external.php b/inc/fun/shortcodes/external.php
+index eaac601..928b281 100644
+--- a/inc/fun/shortcodes/external.php
++++ b/inc/fun/shortcodes/external.php
+@@ -192,7 +192,7 @@ function argon_shortcode_github($attr,$content=""){
+ 		restore_error_handler();
+ 	}
+ 
+-	$out = "<div class='github-info-card github-info-card-" . $size . " card shadow-sm' data-author='" . $author . "' data-project='" . $project . "' githubinfo-card-id='" . $github_info_card_id . "' data-getdata='" . $getdata . "' data-description='" . $description . "' data-stars='" . $stars . "' data-forks='" . $forks . "'>";
++	$out = "<div class='github-info-card github-info-card-" . esc_attr($size) . " card shadow-sm' data-author='" . esc_attr($author) . "' data-project='" . esc_attr($project) . "' githubinfo-card-id='" . $github_info_card_id . "' data-getdata='" . esc_attr($getdata) . "' data-description='" . $description . "' data-stars='" . esc_attr($stars) . "' data-forks='" . esc_attr($forks) . "'>";
+ 	$out .= "<div class='github-info-card-header'><a href='https://github.com/' ref='nofollow' target='_blank' title='Github' no-pjax><span><i class='fa-brands fa-github'></i>";
+ 	if ($size != "mini"){
+ 		$out .= " GitHub";
+@@ -200,8 +200,8 @@ function argon_shortcode_github($attr,$content=""){
+ 	$out .= "</span></a></div>";
+ 	$out .= "<div class='github-info-card-body'>
+ 			<div class='github-info-card-name-a'>
+-				<a href='https://github.com/" . $author . "/" . $project . "' target='_blank' no-pjax>
+-					<span class='github-info-card-name'>" . $author . "/" . $project . "</span>
++				<a href='https://github.com/" . esc_attr($author) . "/" . esc_attr($project) . "' target='_blank' no-pjax>
++					<span class='github-info-card-name'>" . esc_html($author) . "/" . esc_html($project) . "</span>
+ 				</a>
+ 				</div>
+ 			<div class='github-info-card-description'></div>
+@@ -226,16 +226,16 @@ function argon_shortcode_video($attr,$content=""){
+ 	$autoplay = isset( $attr['autoplay'] ) ? $attr['autoplay'] : 'false';
+ 	$out = "<video";
+ 	if ($width != ''){
+-		$out .= " width='" . $width . "'";
++		$out .= " width='" . esc_attr($width) . "'";
+ 	}
+ 	if ($height != ''){
+-		$out .= " height='" . $height . "'";
++		$out .= " height='" . esc_attr($height) . "'";
+ 	}
+ 	if ($autoplay == 'true'){
+ 		$out .= " autoplay";
+ 	}
+ 	$out .= " controls>";
+-	$out .= "<source src='" . $url . "'>";
++	$out .= "<source src='" . esc_url($url) . "'>";
+ 	$out .= "</video>";
+ 	return $out;
+ }
+diff --git a/shuoshuo.php b/shuoshuo.php
+index aa6ef3a..f0e2b19 100644
+--- a/shuoshuo.php
++++ b/shuoshuo.php
+@@ -3,8 +3,13 @@
+ Template Name: 说说
+ * 该页面可以用 归档页 替代
+ */
+-$paged = isset($_GET['current_page']) ? $_GET['current_page'] : 1;
+-query_posts("post_type=shuoshuo&post_status=publish&posts_per_page=30&paged=$paged");
++$paged = isset($_GET['current_page']) ? max(1, intval($_GET['current_page'])) : 1;
++query_posts(array(
++	'post_type' => 'shuoshuo',
++	'post_status' => 'publish',
++	'posts_per_page' => 30,
++	'paged' => $paged,
++));
+ ?>
+ 
+ <?php get_header(); ?>
+diff --git a/template-parts/share.php b/template-parts/share.php
+index a438b67..9a4c31e 100644
+--- a/template-parts/share.php
++++ b/template-parts/share.php
+@@ -62,10 +62,10 @@
+ </div>
+ <script type="text/javascript">
+ 	var shareInfo = {
+-	    title: '<?php echo addslashes(html_entity_decode(get_the_title())); ?>',
+-	    description: '<?php echo addslashes(html_entity_decode(wp_trim_words(html_entity_decode(get_the_content()), 50)));?>',
+-	    url: '<?php global $post; echo get_permalink($post -> ID); ?>',
+-		origin: '<?php echo get_bloginfo('name'); ?>',
+-		source: '<?php echo get_site_url();  ?>',
++	    title: <?php echo wp_json_encode(html_entity_decode(get_the_title()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
++	    description: <?php echo wp_json_encode(html_entity_decode(wp_trim_words(html_entity_decode(get_the_content()), 50)), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
++	    url: <?php global $post; echo wp_json_encode(get_permalink($post -> ID), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
++		origin: <?php echo wp_json_encode(get_bloginfo('name'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
++		source: <?php echo wp_json_encode(get_site_url(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);  ?>,
+ 	};
+ </script>
+\ No newline at end of file
