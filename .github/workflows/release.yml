@@ -124,4 +124,4 @@ jobs:
           gh release create "$PKG_NAME" "$ZIP_PATH" \
             --title "$PKG_NAME" \
             --target "$GITHUB_SHA" \
-            --notes "自动打包发布 ${PKG_NAME}（每周一检查，有修改才发布）"
+            --notes "自动打包发布 ${PKG_NAME}"
