@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<?php
+	$htmlclasses = "";
+	$page_layout = get_option('argon_page_layout');
+	$enable_headroom = get_option('argon_enable_headroom', 'false');
+	if ($page_layout == "single"){
+		$htmlclasses .= "single-column ";
+	}
+	if ($page_layout == "triple"){
+		$htmlclasses .= "triple-column ";
+	}
+	if ($page_layout == "double-reverse"){
+		$htmlclasses .= "double-column-reverse ";
+	}
+	if (get_option('argon_enable_color_immersion') == "true"){
+		$htmlclasses .= "color-immersion ";
+	}
+	if (get_option('argon_enable_amoled_dark') == "true"){
+		$htmlclasses .= "amoled-dark ";
+	}
+	if (get_option('argon_card_shadow') == 'big'){
+		$htmlclasses .= 'use-big-shadow ';
+	}
+	if (get_option('argon_font') == 'serif'){
+		$htmlclasses .= 'use-serif ';
+	}
+	if (get_option('argon_disable_codeblock_style') == 'true'){
+		$htmlclasses .= 'disable-codeblock-style ';
+	}
+	if ($enable_headroom == 'absolute'){
+		$htmlclasses .= 'navbar-absolute ';
+	}
+	$banner_size = get_option('argon_banner_size', 'full');
+	if ($banner_size != 'full'){
+		if ($banner_size == 'mini'){
+			$htmlclasses .= 'banner-mini ';
+		}else if ($banner_size == 'hide'){
+			$htmlclasses .= 'no-banner ';
+		}else if ($banner_size == 'fullscreen'){
+			$htmlclasses .= 'banner-as-cover ';
+		}
+	}
+	if (get_option('argon_toolbar_blur', 'false') == 'true'){
+		$htmlclasses .= 'toolbar-blur ';
+	}
+	$htmlclasses .= get_option('argon_article_header_style', 'article-header-style-default') . ' ';
+	if(strpos($_SERVER['HTTP_USER_AGENT'], 'Safari') !== false && strpos($_SERVER['HTTP_USER_AGENT'], 'Chrome') === false){
+		$htmlclasses .= ' using-safari';
+	}
+?>
+<html <?php language_attributes(); ?> class="no-js <?php echo $htmlclasses;?>">
+<?php
+	$themecolor = get_option("argon_theme_color", "#5e72e4");
+	$themecolor_origin = $themecolor;
+	$show_customize_theme_color_picker = get_option('argon_show_customize_theme_color_picker');
+	if (isset($_COOKIE["argon_custom_theme_color"])){
+		if (argon_checkHEX($_COOKIE["argon_custom_theme_color"]) && $show_customize_theme_color_picker != 'false'){
+			$themecolor = $_COOKIE["argon_custom_theme_color"];
+		}
+	}
+	if (argon_hex2gray($themecolor) < 50){
+		echo '<script>document.getElementsByTagName("html")[0].classList.add("themecolor-toodark");</script>';
+	}
+?>
+<?php
+	$cardradius = get_option('argon_card_radius');
+	if ($cardradius == ""){
+		$cardradius = "16";
+	}
+	$cardradius_origin = $cardradius;
+	if (isset($_COOKIE["argon_card_radius"]) && $_COOKIE["argon_card_radius"] != ""){
+		$cardradius = $_COOKIE["argon_card_radius"];
+	}
+?>
+<head>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<?php if (get_option('argon_enable_mobile_scale') != 'true'){ ?>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<?php }else{ ?>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+	<?php } ?>
+	<meta property="og:site_name" content="<?php echo get_bloginfo('name');?>">
+	<meta property="og:title" content="<?php echo wp_get_document_title();?>">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="<?php echo home_url(add_query_arg(array(),$wp->request));?>">
+	<?php
+		$seo_description = argon_get_seo_description();
+		if ($seo_description != ''){ ?>
+			<meta name="description" content="<?php echo $seo_description?>">
+			<meta property="og:description" content="<?php echo $seo_description?>">
+	<?php } ?>
+
+	<?php
+		$seo_keywords = argon_get_seo_keywords();
+		if ($seo_keywords != ''){ ?>
+			<meta name="keywords" content="<?php echo argon_get_seo_keywords();?>">
+	<?php } ?>
+
+	<?php
+		if (is_single() || is_page()){
+			$og_image = argon_get_og_image();
+			if ($og_image != ''){ ?>
+				<meta property="og:image" content="<?php echo $og_image?>" />
+	<?php 	}
+		} ?>
+
+	<meta name="theme-color" content="<?php echo $themecolor; ?>">
+	<meta name="theme-color-rgb" content="<?php echo argon_hex2str($themecolor); ?>">
+	<meta name="theme-color-origin" content="<?php echo $themecolor_origin; ?>">
+	<meta name="argon-enable-custom-theme-color" content="<?php echo ($show_customize_theme_color_picker != 'false' ? 'true' : 'false'); ?>">
+
+
+	<meta name="theme-card-radius" content="<?php echo $cardradius; ?>">
+	<meta name="theme-card-radius-origin" content="<?php echo $cardradius_origin; ?>">
+
+	<meta name="theme-version" content="<?php echo $GLOBALS['theme_version']; ?>">
+
+	<?php /*Argon fullscreen loading screen - critical CSS, must stay before the enqueued bundle styles*/ ?>
+	<style id="argon_loading_screen_css">
+		.argon-loading-screen {
+			position: fixed;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			z-index: 99999;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+			background: var(--color-background, #f4f5f7);
+			transition: opacity .5s ease, visibility .5s ease;
+		}
+		html.darkmode .argon-loading-screen {
+			background: #282828;
+		}
+		html.darkmode.amoled-dark .argon-loading-screen {
+			background: #111;
+		}
+		.argon-loading-screen:before {
+			content: "";
+			position: absolute;
+			z-index: -1;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			pointer-events: none;
+			background: radial-gradient(circle at 50% 45%, rgba(var(--themecolor-R), var(--themecolor-G), var(--themecolor-B), .08), rgba(var(--themecolor-R), var(--themecolor-G), var(--themecolor-B), 0) 55%);
+		}
+		html.darkmode .argon-loading-screen:before {
+			background: radial-gradient(circle at 50% 45%, rgba(var(--themecolor-R), var(--themecolor-G), var(--themecolor-B), .16), rgba(var(--themecolor-R), var(--themecolor-G), var(--themecolor-B), 0) 55%);
+		}
+		.argon-loading-screen-done {
+			opacity: 0;
+			pointer-events: none;
+			visibility: hidden;
+		}
+		html.no-js .argon-loading-screen {
+			display: none;
+		}
+		.argon-loading-dots {
+			font-size: 0;
+			text-align: center;
+		}
+		.argon-loading-dot {
+			display: inline-block;
+			width: 8px;
+			height: 8px;
+			margin: 0 3px;
+			background: var(--themecolor);
+			border-radius: 50%;
+			box-shadow: 0 0 10px rgba(var(--themecolor-R), var(--themecolor-G), var(--themecolor-B), .35);
+			opacity: .35;
+			transform: scale(.75);
+			animation: argon-loading-pulse 1.1s infinite ease-in-out;
+		}
+		.argon-loading-dot-1 { animation-delay: .1s; }
+		.argon-loading-dot-2 { animation-delay: .2s; }
+		.argon-loading-dot-3 { animation-delay: .3s; }
+		.argon-loading-dot-4 { animation-delay: .4s; }
+		.argon-loading-dot-5 { animation-delay: .5s; }
+		.argon-loading-dot-6 { animation-delay: .6s; }
+		.argon-loading-dot-7 { animation-delay: .7s; }
+		.argon-loading-dot-8 { animation-delay: .8s; }
+		@keyframes argon-loading-pulse {
+			0%, 100% {
+				transform: scale(.75);
+				opacity: .35;
+			}
+			50% {
+				transform: scale(1.1);
+				opacity: 1;
+			}
+		}
+	</style>
+
+	<link rel="profile" href="http://gmpg.org/xfn/11">
+	<?php if ( is_singular() && pings_open( get_queried_object() ) ) : ?>
+	<link rel="pingback" href="<?php echo esc_url( get_bloginfo( 'pingback_url' ) ); ?>">
+	<?php endif; ?>
+	<?php
+		wp_enqueue_style("style", $GLOBALS['assets_path'] . "/assets/dist/argon-theme.css", null, $GLOBALS['theme_version']);
+		if (get_option('argon_disable_googlefont') != 'true') {wp_enqueue_style("googlefont", "//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700|Noto+Serif+SC:300,600&display=swap");}
+	?>
+	<?php $wp_path = get_option('argon_wp_path'); $GLOBALS['wp_path'] = $wp_path == '' ? '/' : $wp_path; ?>
+	<script>
+		document.documentElement.classList.remove("no-js");
+		var argonConfig = {
+			wp_path: "<?php echo $GLOBALS['wp_path']; ?>",
+			language: "<?php echo argon_get_locate(); ?>",
+			dateFormat: "<?php echo get_option('argon_dateformat', 'YMD'); ?>",
+			<?php if (get_option('argon_enable_zoomify') == 'true'){ ?>
+				zoomify: {
+					duration: <?php echo get_option('argon_zoomify_duration', 200); ?>,
+					easing: "<?php echo get_option('argon_zoomify_easing', 'cubic-bezier(0.4,0,0,1)'); ?>",
+					scale: <?php echo get_option('argon_zoomify_scale', 0.9); ?>
+				},
+			<?php } else { ?>
+				zoomify: false,
+			<?php } ?>
+			pangu: "<?php echo get_option('argon_enable_pangu', 'false'); ?>",
+			<?php if (get_option('argon_enable_lazyload') != 'false'){ ?>
+				lazyload: {
+					threshold: <?php echo get_option('argon_lazyload_threshold', 800); ?>,
+					effect: "<?php echo get_option('argon_lazyload_effect', 'fadeIn'); ?>"
+				},
+			<?php } else { ?>
+				lazyload: false,
+			<?php } ?>
+			fold_long_comments: <?php echo get_option('argon_fold_long_comments', 'false'); ?>,
+			fold_long_shuoshuo: <?php echo get_option('argon_fold_long_shuoshuo', 'false'); ?>,
+			disable_pjax: <?php echo get_option('argon_pjax_disabled', 'false'); ?>,
+			pjax_animation_durtion: <?php echo (get_option("argon_disable_pjax_animation") == 'true' ? '0' : '600'); ?>,
+			headroom: "<?php echo $enable_headroom; ?>",
+			waterflow_columns: "<?php echo get_option('argon_article_list_waterflow', '1'); ?>",
+			code_highlight: {
+				enable: <?php echo get_option('argon_enable_code_highlight', 'false'); ?>,
+				hide_linenumber: <?php echo get_option('argon_code_highlight_hide_linenumber', 'false'); ?>,
+				transparent_linenumber: <?php echo get_option('argon_code_highlight_transparent_linenumber', 'false'); ?>,
+				break_line: <?php echo get_option('argon_code_highlight_break_line', 'false'); ?>
+			},
+			hide_footer_author: <?php echo (get_option('argon_hide_footer_author') == 'true' ? 'true' : 'false'); ?>
+		}
+	</script>
+	<script>
+		var darkmodeAutoSwitch = "<?php echo (get_option("argon_darkmode_autoswitch") == '' ? 'false' : get_option("argon_darkmode_autoswitch"));?>";
+		function setDarkmode(enable){
+			if (enable){
+				document.documentElement.classList.add("darkmode");
+			}else{
+				document.documentElement.classList.remove("darkmode");
+			}
+			let scrollEvent = document.createEvent('HTMLEvents');
+			scrollEvent.initEvent('scroll', true, false);
+			document.documentElement.dispatchEvent(scrollEvent);
+		}
+		function toggleDarkmode(){
+			if (document.documentElement.classList.contains("darkmode")){
+				setDarkmode(false);
+				sessionStorage.setItem("Argon_Enable_Dark_Mode", "false");
+			}else{
+				setDarkmode(true);
+				sessionStorage.setItem("Argon_Enable_Dark_Mode", "true");
+			}
+		}
+		if (sessionStorage.getItem("Argon_Enable_Dark_Mode") == "true"){
+			setDarkmode(true);
+		}
+		function toggleDarkmodeByPrefersColorScheme(media){
+			if (sessionStorage.getItem('Argon_Enable_Dark_Mode') == "false" || sessionStorage.getItem('Argon_Enable_Dark_Mode') == "true"){
+				return;
+			}
+			if (media.matches){
+				setDarkmode(true);
+			}else{
+				setDarkmode(false);
+			}
+		}
+		function toggleDarkmodeByTime(){
+			if (sessionStorage.getItem('Argon_Enable_Dark_Mode') == "false" || sessionStorage.getItem('Argon_Enable_Dark_Mode') == "true"){
+				return;
+			}
+			let hour = new Date().getHours();
+			if (<?php echo apply_filters("argon_darkmode_time_check", "hour < 7 || hour >= 22")?>){
+				setDarkmode(true);
+			}else{
+				setDarkmode(false);
+			}
+		}
+		if (darkmodeAutoSwitch == 'system'){
+			var darkmodeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+			darkmodeMediaQuery.addListener(toggleDarkmodeByPrefersColorScheme);
+			toggleDarkmodeByPrefersColorScheme(darkmodeMediaQuery);
+		}
+		if (darkmodeAutoSwitch == 'time'){
+			toggleDarkmodeByTime();
+		}
+		if (darkmodeAutoSwitch == 'alwayson'){
+			setDarkmode(true);
+		}
+
+		function toggleAmoledDarkMode(){
+			document.documentElement.classList.toggle("amoled-dark");
+			if (document.documentElement.classList.contains("amoled-dark")){
+				localStorage.setItem("Argon_Enable_Amoled_Dark_Mode", "true");
+			}else{
+				localStorage.setItem("Argon_Enable_Amoled_Dark_Mode", "false");
+			}
+		}
+		if (localStorage.getItem("Argon_Enable_Amoled_Dark_Mode") == "true"){
+			document.documentElement.classList.add("amoled-dark");
+		}else if (localStorage.getItem("Argon_Enable_Amoled_Dark_Mode") == "false"){
+			document.documentElement.classList.remove("amoled-dark");
+		}
+	</script>
+	<script>
+		if (navigator.userAgent.indexOf("Safari") !== -1 && navigator.userAgent.indexOf("Chrome") === -1){
+			document.documentElement.classList.add("using-safari");
+		}
+	</script>
+	<?php 
+		wp_enqueue_script("argonjs", $GLOBALS['assets_path'] . "/assets/dist/argon-theme.js", null, $GLOBALS['theme_version']);
+	?>
+	<?php wp_head(); ?>
+
+	<?php $smoothscroll_type = get_option('argon_enable_smoothscroll_type');
+		if ($smoothscroll_type == '2') { /*平滑滚动*/?>
+		<script src="<?php echo $GLOBALS['assets_path']; ?>/assets/vendor/smoothscroll/smoothscroll2.js"></script>
+	<?php }else if ($smoothscroll_type == '3'){?>
+		<script src="<?php echo $GLOBALS['assets_path']; ?>/assets/vendor/smoothscroll/smoothscroll3.min.js"></script>
+	<?php }else if ($smoothscroll_type == '1_pulse'){?>
+		<script src="<?php echo $GLOBALS['assets_path']; ?>/assets/vendor/smoothscroll/smoothscroll1_pulse.js"></script>
+	<?php }else if ($smoothscroll_type != 'disabled'){?>
+		<script src="<?php echo $GLOBALS['assets_path']; ?>/assets/vendor/smoothscroll/smoothscroll1.js"></script>
+	<?php }?>
+</head>
+
+<?php echo get_option('argon_custom_html_head'); ?>
+
+<style id="themecolor_css">
+	<?php
+		$themecolor_rgbstr = argon_hex2str($themecolor);
+		$RGB = argon_hexstr2rgb($themecolor);
+		$HSL = argon_rgb2hsl($RGB['R'], $RGB['G'], $RGB['B']);
+	?>
+	:root{
+		--themecolor: <?php echo $themecolor; ?>;
+		--themecolor-R: <?php echo $RGB['R']; ?>;
+		--themecolor-G: <?php echo $RGB['G']; ?>;
+		--themecolor-B: <?php echo $RGB['B']; ?>;
+		--themecolor-H: <?php echo $HSL['H']; ?>;
+		--themecolor-S: <?php echo $HSL['S']; ?>;
+		--themecolor-L: <?php echo $HSL['L']; ?>;
+	}
+</style>
+<style id="theme_cardradius_css">
+	:root{
+		--card-radius: <?php echo $cardradius; ?>px;
+	}
+</style>
+<?php $sidebar_width = get_option('argon_sidebar_width', 240);
+	if ($sidebar_width != 240){
+		?>
+		<style id="theme_sidebar_width_css">
+			:root{
+				--sidebar-width: max(<?php echo $sidebar_width; ?>px, calc(100vw - 20px));
+			}
+		</style>
+		<?php
+	}
+?>
+
+<body <?php body_class(); ?>>
+<?php /*Argon fullscreen loading screen - a direct child of body, outside every PJAX container, so it only shows on the initial hard page load*/ ?>
+<div class="argon-loading-screen" aria-hidden="true">
+	<div class="argon-loading-dots">
+		<div class="argon-loading-dot argon-loading-dot-1"></div>
+		<div class="argon-loading-dot argon-loading-dot-2"></div>
+		<div class="argon-loading-dot argon-loading-dot-3"></div>
+		<div class="argon-loading-dot argon-loading-dot-4"></div>
+		<div class="argon-loading-dot argon-loading-dot-5"></div>
+		<div class="argon-loading-dot argon-loading-dot-6"></div>
+		<div class="argon-loading-dot argon-loading-dot-7"></div>
+		<div class="argon-loading-dot argon-loading-dot-8"></div>
+	</div>
+</div>
+<script>
+	(function(){
+		var loadingScreen = document.querySelector(".argon-loading-screen");
+		if (!loadingScreen) return;
+		var loadingScreenHidden = false;
+		function hideLoadingScreen(){
+			if (loadingScreenHidden) return;
+			loadingScreenHidden = true;
+			loadingScreen.classList.add("argon-loading-screen-done");
+			setTimeout(function(){
+				if (loadingScreen.parentNode){
+					loadingScreen.parentNode.removeChild(loadingScreen);
+				}
+			}, 600);
+		}
+		if (document.readyState === "complete"){
+			hideLoadingScreen();
+		}else{
+			window.addEventListener("load", hideLoadingScreen);
+		}
+		setTimeout(hideLoadingScreen, 4000);
+	})();
+</script>
+<?php /*wp_body_open();*/ ?>
+<div id="toolbar">
+	<header class="header-global">
+		<nav id="navbar-main" class="navbar navbar-main navbar-expand-lg navbar-transparent navbar-light bg-primary headroom--not-bottom headroom--not-top headroom--pinned">
+			<div class="container">
+				<button id="open_sidebar" class="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle sidebar">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="navbar-brand mr-0">
+					<?php $toolbar_icon = get_option('argon_toolbar_icon');
+						$toolbar_icon_link = get_option('argon_toolbar_icon_link');
+						if ($toolbar_icon != '') { /*顶栏ICON(如果选项中开启)*/?>
+						<a class="navbar-brand navbar-icon mr-lg-5" href="<?php echo $toolbar_icon_link; ?>">
+							<img src="<?php echo $toolbar_icon; ?>">
+						</a>
+					<?php }?>
+					<?php
+						//顶栏标题
+						$toolbar_title = get_option('argon_toolbar_title');
+						if ($toolbar_title == ''){ $toolbar_title = get_bloginfo('name'); }
+						if ($toolbar_title == '--hidden--'){
+							$toolbar_title = '';
+						}
+					?>
+					<a class="navbar-brand navbar-title" href="<?php bloginfo('url'); ?>"><?php echo $toolbar_title;?></a>
+				</div>
+				<div class="navbar-collapse collapse" id="navbar_global">
+					<div class="navbar-collapse-header">
+						<div class="row" style="display: none;">
+							<div class="col-6 collapse-brand"></div>
+							<div class="col-6 collapse-close">
+								<button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation">
+									<span></span>
+									<span></span>
+								</button>
+							</div>
+						</div>
+						<div class="input-group input-group-alternative">
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fa fa-search"></i></span>
+							</div>
+							<input id="navbar_search_input_mobile" class="form-control" placeholder="搜索什么..." type="text" autocomplete="off">
+						</div>
+					</div>
+					<?php
+						/*顶栏菜单*/
+						if ( has_nav_menu('toolbar_menu') ){
+							echo "<ul class='navbar-nav navbar-nav-hover'>";
+							wp_nav_menu( array(
+								'container'  => '',
+								'theme_location'  => 'toolbar_menu',
+								'items_wrap'  => '%3$s',
+								'depth' => 0,
+								'walker' => new toolbarMenuWalker()
+							) );
+							echo "</ul>";
+						}
+					?>
+					<ul class="navbar-nav navbar-search">
+						<li id="navbar_search_container" class="nav-item" data-toggle="modal">
+							<div id="navbar_search_input_container">
+								<div class="input-group input-group-alternative">
+									<div class="input-group-prepend">
+										<span class="input-group-text"><i class="fa fa-search"></i></span>
+									</div>
+									<input id="navbar_search_input" class="form-control" placeholder="<?php _e('搜索什么...', 'argon');?>" type="text" autocomplete="off">
+								</div>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div id="navbar_menu_mask" data-toggle="collapse" data-target="#navbar_global"></div>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon navbar-toggler-searcg-icon"></span>
+				</button>
+			</div>
+		</nav>
+	</header>
+</div>
+<div class="modal fade" id="argon_search_modal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title"><?php _e('搜索', 'argon');?></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<?php get_search_form(); ?>
+			</div>
+		</div>
+	</div>
+</div>
+<!--Banner-->
+<section id="banner" class="banner section section-lg section-shaped">
+	<?php $banner_background_color_type = get_option('argon_banner_background_color_type'); ?>
+	<div class="shape <?php echo get_option('argon_banner_background_hide_shapes') == 'true' ? '' : 'shape-style-1' ?> <?php echo $banner_background_color_type == '' ? 'shape-primary' : $banner_background_color_type; ?>">
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+
+	<?php
+		$banner_title = get_option('argon_banner_title');
+		if ($banner_title == ''){ $banner_title = get_bloginfo('name'); }
+		$enable_banner_title_typing_effect = get_option('argon_enable_banner_title_typing_effect');
+		if ($enable_banner_title_typing_effect != 'true'){ $enable_banner_title_typing_effect = "false"; }
+		$banner_subtitle = get_option('argon_banner_subtitle');
+	?>
+	<div id="banner_container_main" class="banner-container container text-center">
+		<?php if ($enable_banner_title_typing_effect != "true"){?>
+			<div class="banner-title text-white"><span class="banner-title-inner"><?php echo apply_filters('argon_banner_title_html', $banner_title); ?></span>
+			<?php echo $banner_subtitle == '' ? '' : '<span class="banner-subtitle d-block">' . $banner_subtitle . '</span>'; ?></div>
+		<?php } else {?>
+			<div class="banner-title text-white" data-interval="<?php echo get_option('argon_banner_typing_effect_interval', 100); ?>"><span data-text="<?php echo $banner_title; ?>" class="banner-title-inner">&nbsp;</span>
+			<?php echo $banner_subtitle == '' ? '' : '<span data-text="' . $banner_subtitle . '" class="banner-subtitle d-block">&nbsp;</span>'; ?></div>
+		<?php }?>
+	</div>
+	<?php if (get_option('argon_banner_background_url') != '') { ?>
+		<style>
+			section.banner{
+				background-image: url(<?php echo argon_get_banner_background_url(); ?>) !important;
+			}
+		</style>
+	<?php } ?>
+	<?php if ($banner_size == 'fullscreen') { ?>
+		<div class="cover-scroll-down">
+			<i class="fa fa-angle-down" aria-hidden="true"></i>
+		</div>
+	<?php } ?>
+</section>
+
+<?php $page_background_url = apply_filters('argon_page_background_url', get_option('argon_page_background_url'));
+	$page_background_opacity = get_option('argon_page_background_opacity');
+	if ($page_background_url != '') { ?>
+	<style>
+		<?php if (get_option('argon_page_background_banner_style', 'false') == 'transparent') { ?>
+			#banner, #banner .shape {
+				background: transparent !important;
+			}
+		<?php } ?>
+		#content:before {
+			content: '';
+			display: block;
+			position: fixed;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			z-index: -2;
+			background: url(<?php echo $page_background_url;?>);
+			background-position: center;
+			background-size: cover;
+			background-repeat: no-repeat;
+			opacity: <?php echo ($page_background_opacity == '' ? '1' : $page_background_opacity); ?>;
+			transition: opacity .5s ease;
+		}
+		html.darkmode #content:before{
+			filter: brightness(0.65);
+		}
+		<?php $page_background_dark_url = apply_filters('argon_page_background_dark_url', get_option('argon_page_background_dark_url'));
+			if ($page_background_dark_url != '') { ?>
+			#content:after {
+				content: '';
+				display: block;
+				position: fixed;
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
+				z-index: -2;
+				background: url(<?php echo $page_background_dark_url;?>);
+				background-position: center;
+				background-size: cover;
+				background-repeat: no-repeat;
+				opacity: 0;
+				transition: opacity .5s ease;
+			}
+			html.darkmode #content:after {
+				opacity: <?php echo ($page_background_opacity == '' ? '1' : $page_background_opacity); ?>;
+			}
+			html.darkmode #content:before {
+				opacity: 0;
+			}
+		<?php } ?>
+	</style>
+<?php } ?>
+
+<?php if (get_option('argon_show_toolbar_mask') == 'true') { ?>
+	<style>
+		#banner:after {
+			content: '';
+			width: 100vw;
+			position: absolute;
+			left: 0;
+			top: 0;
+			height: 120px;
+			background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0) 100%);
+			display: block;
+			z-index: -1;
+		}
+		.banner-title {
+			text-shadow: 0 5px 15px rgba(0, 0, 0, .2);
+		}
+	</style>
+<?php } ?>
+
+<div id="float_action_buttons" class="float-action-buttons fabtns-unloaded">
+	<button id="fabtn_toggle_sides" class="btn btn-icon btn-neutral fabtn shadow-sm" type="button" aria-hidden="true" tooltip-move-to-left="<?php _e('移至左侧', 'argon'); ?>" tooltip-move-to-right="<?php _e('移至右侧', 'argon'); ?>">
+		<span class="btn-inner--icon fabtn-show-on-right"><i class="fa fa-caret-left"></i></span>
+		<span class="btn-inner--icon fabtn-show-on-left"><i class="fa fa-caret-right"></i></span>
+	</button>
+	<button id="fabtn_back_to_top" class="btn btn-icon btn-neutral fabtn shadow-sm" type="button" aria-label="Back To Top" tooltip="<?php _e('回到顶部', 'argon'); ?>">
+		<span class="btn-inner--icon"><i class="fa fa-angle-up"></i></span>
+	</button>
+	<button id="fabtn_go_to_comment" class="btn btn-icon btn-neutral fabtn shadow-sm d-none" type="button" <?php if (get_option('argon_fab_show_gotocomment_button') != 'true') echo " style='display: none;'";?> aria-label="Comment" tooltip="<?php _e('评论', 'argon'); ?>">
+		<span class="btn-inner--icon"><i class="fa fa-comment fa-comment-o"></i></span>
+	</button>
+	<button id="fabtn_toggle_darkmode" class="btn btn-icon btn-neutral fabtn shadow-sm" type="button" <?php if (get_option('argon_fab_show_darkmode_button') != 'true') echo " style='display: none;'";?> aria-label="Toggle Darkmode" tooltip-darkmode="<?php _e('夜间模式', 'argon'); ?>" tooltip-blackmode="<?php _e('暗黑模式', 'argon'); ?>" tooltip-lightmode="<?php _e('日间模式', 'argon'); ?>">
+		<span class="btn-inner--icon"><i class="fa fa-moon fa-moon-o"></i><i class='fa fa-lightbulb fa-lightbulb-o'></i></span>
+	</button>
+	<button id="fabtn_toggle_blog_settings_popup" class="btn btn-icon btn-neutral fabtn shadow-sm" type="button" <?php if (get_option('argon_fab_show_settings_button') == 'false') echo " style='display: none;'";?> aria-label="Open Blog Settings Menu" tooltip="<?php _e('设置', 'argon'); ?>">
+		<span class="btn-inner--icon"><i class="fa fa-cog"></i></span>
+	</button>
+	<div id="fabtn_blog_settings_popup" class="card shadow-sm" style="opacity: 0;" aria-hidden="true">
+		<div id="close_blog_settings"><i class="fa fa-close"></i></div>
+		<div class="blog-setting-item mt-3">
+			<div style="transform: translateY(-4px);"><div id="blog_setting_toggle_darkmode_and_amoledarkmode" tooltip-switch-to-darkmode="<?php _e('切换到夜间模式', 'argon'); ?>" tooltip-switch-to-blackmode="<?php _e('切换到暗黑模式', 'argon'); ?>"><span><?php _e('夜间模式', 'argon');?></span><span><?php _e('暗黑模式', 'argon');?></span></div></div>
+			<div style="flex: 1;"></div>
+			<label id="blog_setting_darkmode_switch" class="custom-toggle">
+				<span class="custom-toggle-slider rounded-circle"></span>
+			</label>
+		</div>
+		<div class="blog-setting-item mt-3">
+			<div style="flex: 1;"><?php _e('字体', 'argon');?></div>
+			<div>
+				<button id="blog_setting_font_sans_serif" type="button" class="blog-setting-font btn btn-outline-primary blog-setting-selector-left">Sans Serif</button><button id="blog_setting_font_serif" type="button" class="blog-setting-font btn btn-outline-primary blog-setting-selector-right">Serif</button>
+			</div>
+		</div>
+		<div class="blog-setting-item mt-3 mb-3">
+			<div style="flex: 1;"><?php _e('滤镜', 'argon');?></div>
+			<div id="blog_setting_filters" class="ml-3">
+				<button id="blog_setting_filter_off" type="button" class="blog-setting-filter-btn ml-0" filter-name="off"><?php _e('关闭', 'argon');?></button>
+				<button id="blog_setting_filter_sunset" type="button" class="blog-setting-filter-btn" filter-name="sunset"><?php _e('日落', 'argon');?></button>
+				<button id="blog_setting_filter_darkness" type="button" class="blog-setting-filter-btn" filter-name="darkness"><?php _e('暗化', 'argon');?></button>
+				<button id="blog_setting_filter_grayscale" type="button" class="blog-setting-filter-btn" filter-name="grayscale"><?php _e('灰度', 'argon');?></button>
+			</div>
+		</div>
+		<?php if ($show_customize_theme_color_picker != 'false') {?>
+			<div class="blog-setting-item mt-1 mb-3">
+				<div style="flex: 1;"><?php _e('主题色', 'argon');?></div>
+				<div id="theme-color-picker" class="ml-3"></div>
+			</div>
+		<?php }?>
+	</div>
+	<button id="fabtn_reading_progress" class="btn btn-icon btn-neutral fabtn shadow-sm" type="button" aria-hidden="true" tooltip="<?php _e('阅读进度', 'argon'); ?>">
+		<div id="fabtn_reading_progress_bar" style="width: 0%;"></div>
+		<span id="fabtn_reading_progress_details">0%</span>
+	</button>
+</div>
+
+<div id="content" class="site-content">

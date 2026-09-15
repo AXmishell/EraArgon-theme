@@ -1,0 +1,16 @@
+.page-information-card {
+	margin: 30px 20px;
+	margin-top: 0px;
+	background: linear-gradient(135deg, var(--glass-bg-strong), var(--glass-bg)) !important;
+	-webkit-backdrop-filter: var(--glass-backdrop);
+	backdrop-filter: var(--glass-backdrop);
+	border: 1px solid var(--glass-border) !important;
+	box-shadow: var(--glass-shadow), inset 1px 1px 0 var(--glass-highlight) !important;
+}
+.custom-control.search-filter-wrapper {
+	display: inline-block;
+	margin-right: 12px;
+}
+.custom-control.search-filter-wrapper > .custom-control-label {
+	line-height: 25px;
+}

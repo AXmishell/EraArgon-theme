@@ -1,0 +1,8 @@
+node_modules
+.vscode
+.idea
+# OpenCode session files
+.omo/
+
+# Playwright MCP artifacts
+.playwright-mcp/

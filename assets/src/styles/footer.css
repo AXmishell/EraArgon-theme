@@ -1,0 +1,43 @@
+#footer {
+	background: var(--themecolor-gradient);
+	color: #fff;
+	width: 100%;
+	float: right;
+	margin-bottom: 25px;
+	text-align: center;
+	padding: 25px 20px;
+	line-height: 1.8;
+	transition: none;
+	/*========== Glassmorphism 底栏 ==========*/
+	border: 1px solid var(--glass-border) !important;
+	box-shadow: var(--glass-shadow), inset 1px 1px 0 var(--glass-highlight) !important;
+}
+#footer a {
+	color: #fff;
+}
+/*========== 首页无限滚动结束后的固定版权条（全宽贴浏览器底部，类似导航栏） ==========*/
+#footer.argon-infinite-scroll-footer {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	float: none;
+	margin: 0;
+	padding: 14px 20px;
+	line-height: 1.6;
+	z-index: 900;
+	/*直角、去除底部投影，保证与浏览器底部严丝合缝*/
+	border-radius: 0 !important;
+	border: none !important;
+	box-shadow: 0 -2px 12px rgba(31, 38, 135, 0.10) !important;
+	/*滑入/滑出动画：默认藏在底部外，出现时从下而上移动，退出时从上往下移动*/
+	transform: translateY(100%);
+	visibility: hidden;
+	transition: transform .35s ease, visibility 0s linear .35s;
+}
+#footer.argon-infinite-scroll-footer.argon-footer-visible {
+	transform: translateY(0);
+	visibility: visible;
+	transition: transform .35s ease, visibility 0s linear 0s;
+}
