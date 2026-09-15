@@ -1,5 +1,5 @@
 diff --git a/inc/fun/comment/ajax.php b/inc/fun/comment/ajax.php
-index 082502b..371b58a 100644
+index 082502b..e722fa3 100644
 --- a/inc/fun/comment/ajax.php
 +++ b/inc/fun/comment/ajax.php
 @@ -9,6 +9,9 @@ function argon_get_comment_edit_history(){
@@ -21,7 +21,15 @@ index 082502b..371b58a 100644
  				</div>";
  	}
  	exit(json_encode(array(
-@@ -145,11 +148,11 @@ function argon_user_edit_comment(){
+@@ -96,7 +99,6 @@ function argon_ajax_post_comment(){
+ 		'id' => $comment -> comment_ID,
+ 		'parentID' => $comment -> comment_parent,
+ 		'commentOrder' => (get_option("comment_order") == "" ? "desc" : get_option("comment_order")),
+-		'newCaptchaSeed' => $newCaptchaSeed,
+ 		'newCaptcha' => $newCaptcha,
+ 		'newCaptchaAnswer' => $newCaptchaAnswer,
+ 		'isAdmin' => current_user_can('level_7'),
+@@ -145,11 +147,11 @@ function argon_user_edit_comment(){
  			$editHistory = array();
  		}
  		array_push($editHistory, array(
@@ -35,6 +43,31 @@ index 082502b..371b58a 100644
  		exit(json_encode(array(
  			'status' => 'success',
  			'msg' => __('编辑评论成功', 'argon'),
+diff --git a/inc/fun/comment/captcha.php b/inc/fun/comment/captcha.php
+index 404866c..f95dd77 100644
+--- a/inc/fun/comment/captcha.php
++++ b/inc/fun/comment/captcha.php
+@@ -8,7 +8,7 @@ function argon_get_comment_captcha_seed($refresh = false){
+ 		}
+ 		return $res;
+ 	}
+-	$captchaSeed = rand(0 , 500000000);
++	$captchaSeed = random_int(0 , 500000000);
+ 	$_SESSION['captchaSeed'] = $captchaSeed;
+ 	session_write_close();
+ 	return $captchaSeed;
+@@ -122,10 +122,8 @@ function argon_ajax_get_captcha(){
+ 	if (get_option('argon_get_captcha_by_ajax', 'false') != 'true') {
+ 		return;
+ 	}
+-	$seed = argon_get_comment_captcha_seed();
+ 	exit(json_encode(array(
+-		'captcha' => argon_get_comment_captcha($seed),
+-		'captchaSeed' => $seed
++		'captcha' => argon_get_comment_captcha(argon_get_comment_captcha_seed())
+ 	)));
+ }
+ add_action('wp_ajax_get_captcha', 'argon_ajax_get_captcha');
 diff --git a/inc/fun/comment/notify.php b/inc/fun/comment/notify.php
 index d51d873..e40f6a6 100644
 --- a/inc/fun/comment/notify.php
@@ -48,6 +81,41 @@ index d51d873..e40f6a6 100644
  	//是否启用 Markdown
  	if ($_POST['use_markdown'] == 'true' && get_option("argon_comment_allow_markdown") != "false"){
  		update_comment_meta($id, "use_markdown", "true");
+diff --git a/inc/fun/comment/upvote.php b/inc/fun/comment/upvote.php
+index a504787..97e25f3 100644
+--- a/inc/fun/comment/upvote.php
++++ b/inc/fun/comment/upvote.php
+@@ -31,12 +31,30 @@ function argon_is_comment_upvoted($id){
+ 	}
+ 	return false;
+ }
++function argon_check_upvote_ratelimit(){
++	//按 IP 做服务端限流，配合前端 Cookie 去重，阻止无限刷票（IP 限流可被代理绕过，仅提高门槛）
++	$ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
++	$transient = 'argon_upvote_ratelimit_' . md5($ip);
++	$count = intval(get_transient($transient));
++	if ($count >= 30){
++		return false;
++	}
++	set_transient($transient, $count + 1, 60);
++	return true;
++}
+ function argon_upvote_comment(){
+ 	if (get_option("argon_enable_comment_upvote", "false") != "true"){
+ 		return;
+ 	}
+ 	header('Content-Type:application/json; charset=utf-8');
+ 	$ID = $_POST["comment_id"];
++	if (!argon_check_upvote_ratelimit()){
++		exit(json_encode(array(
++			'status' => 'failed',
++			'msg' => __('点赞过于频繁，请稍后再试', 'argon'),
++			'total_upvote' => argon_get_comment_upvotes($ID)
++		)));
++	}
+ 	$comment = get_comment($ID);
+ 	if ($comment == null){
+ 		exit(json_encode(array(
 diff --git a/inc/fun/post-extra-meta-editor.php b/inc/fun/post-extra-meta-editor.php
 index 06ded65..e6e5c45 100644
 --- a/inc/fun/post-extra-meta-editor.php
@@ -98,9 +166,18 @@ index 30b2660..26b361f 100644
  	}
  
 diff --git a/inc/fun/shortcodes/content.php b/inc/fun/shortcodes/content.php
-index 11d50d7..bdb9d88 100644
+index 11d50d7..541e39a 100644
 --- a/inc/fun/shortcodes/content.php
 +++ b/inc/fun/shortcodes/content.php
+@@ -48,7 +48,7 @@ function argon_shortcode_progressbar($attr,$content=""){
+ 	if ($content != ""){
+ 		$out .= "<div class='progress-label'><span>" . $content . "</span></div>";
+ 	}
+-	$progress = isset( $attr['progress'] ) ? $attr['progress'] : 100;
++	$progress = isset( $attr['progress'] ) ? esc_attr($attr['progress']) : 100;
+ 	$out .= "<div class='progress-percentage'><span>" . $progress . "%</span></div>";
+ 	$out .= "</div><div class='progress'><div class='progress-bar";
+ 	$color = isset( $attr['color'] ) ? $attr['color'] : 'indigo';
 @@ -122,11 +122,11 @@ function argon_shortcode_alert($attr,$content=""){
  	}
  	$out .= "'>";
@@ -149,9 +226,51 @@ index 11d50d7..bdb9d88 100644
  	$out .= ">" . $content . "</span>";
  	return $out;
 diff --git a/inc/fun/shortcodes/external.php b/inc/fun/shortcodes/external.php
-index eaac601..928b281 100644
+index eaac601..309299a 100644
 --- a/inc/fun/shortcodes/external.php
 +++ b/inc/fun/shortcodes/external.php
+@@ -102,7 +102,7 @@ function argon_shortcode_friend_link_simple($attr,$content=""){
+ 				$row_tag_open = False;
+ 				$out .= "</div>";
+ 			}
+-			$out .= "<div class='friend-category-title text-black'>" . $now[1] . "</div>";
++			$out .= "<div class='friend-category-title text-black'>" . esc_html($now[1]) . "</div>";
+ 		}
+ 		if ($now[0] == 'link'){
+ 			if ($row_tag_open == False){
+@@ -114,26 +114,26 @@ function argon_shortcode_friend_link_simple($attr,$content=""){
+ 				<div class='card shadow-sm'>
+ 					<div class='d-flex'>
+ 						<div class='friend-link-avatar'>
+-							<a target='_blank' href='" . $now[1] . "'>";
++							<a target='_blank' href='" . esc_url($now[1]) . "'>";
+ 			if (!ctype_space($now[4]) && $now[4] != '' && isset($now[4])){
+-				$out .= "<img src='" . $now[4] . "' class='icon bg-gradient-secondary rounded-circle text-white' style='pointer-events: none;'>
++				$out .= "<img src='" . esc_url($now[4]) . "' class='icon bg-gradient-secondary rounded-circle text-white' style='pointer-events: none;'>
+ 						</img>";
+ 			}else{
+-				$out .= "<div class='icon icon-shape bg-gradient-primary rounded-circle text-white'>" . mb_substr($now[2], 0, 1) . "
++				$out .= "<div class='icon icon-shape bg-gradient-primary rounded-circle text-white'>" . esc_html(mb_substr($now[2], 0, 1)) . "
+ 						</div>";
+ 			}
+ 
+ 			$out .= "		</a>
+ 						</div>
+ 						<div class='pl-3'>
+-							<div class='friend-link-title title text-primary'><a target='_blank' href='" . $now[1] . "'>" . $now[2] . "</a>
++							<div class='friend-link-title title text-primary'><a target='_blank' href='" . esc_url($now[1]) . "'>" . esc_html($now[2]) . "</a>
+ 						</div>";
+ 			if (!ctype_space($now[3]) && $now[3] != ''  && isset($now[3])){
+-				$out .= "<p class='friend-link-description'>" . $now[3] . "</p>";
++				$out .= "<p class='friend-link-description'>" . esc_html($now[3]) . "</p>";
+ 			}else{
+ 				/*$out .= "<p class='friend-link-description'>&nbsp;</p>";*/
+ 			}
+-			$out .= "		<a target='_blank' href='" . $now[1] . "' class='text-primary opacity-8'>前往</a>
++			$out .= "		<a target='_blank' href='" . esc_url($now[1]) . "' class='text-primary opacity-8'>前往</a>
+ 						</div>
+ 					</div>
+ 				</div>
 @@ -192,7 +192,7 @@ function argon_shortcode_github($attr,$content=""){
  		restore_error_handler();
  	}
@@ -192,6 +311,24 @@ index eaac601..928b281 100644
  	$out .= "</video>";
  	return $out;
  }
+diff --git a/inc/fun/shuoshuo.php b/inc/fun/shuoshuo.php
+index 1bb43b8..07ba8eb 100644
+--- a/inc/fun/shuoshuo.php
++++ b/inc/fun/shuoshuo.php
+@@ -67,6 +67,13 @@ function argon_set_shuoshuo_upvotes($ID){
+ function argon_upvote_shuoshuo(){
+ 	header('Content-Type:application/json; charset=utf-8');
+ 	$ID = $_POST["shuoshuo_id"];
++	if (!argon_check_upvote_ratelimit()){
++		exit(json_encode(array(
++			'status' => 'failed',
++			'msg' => __('点赞过于频繁，请稍后再试', 'argon'),
++			'total_upvote' => argon_get_shuoshuo_upvotes($ID)
++		)));
++	}
+ 	$upvotedList = isset( $_COOKIE['argon_shuoshuo_upvoted'] ) ? $_COOKIE['argon_shuoshuo_upvoted'] : '';
+ 	if (in_array($ID, explode(',', $upvotedList))){
+ 		exit(json_encode(array(
 diff --git a/shuoshuo.php b/shuoshuo.php
 index aa6ef3a..f0e2b19 100644
 --- a/shuoshuo.php
