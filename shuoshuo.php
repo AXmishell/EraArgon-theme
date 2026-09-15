@@ -3,8 +3,13 @@
 Template Name: 说说
 * 该页面可以用 归档页 替代
 */
-$paged = isset($_GET['current_page']) ? $_GET['current_page'] : 1;
-query_posts("post_type=shuoshuo&post_status=publish&posts_per_page=30&paged=$paged");
+$paged = isset($_GET['current_page']) ? max(1, intval($_GET['current_page'])) : 1;
+query_posts(array(
+	'post_type' => 'shuoshuo',
+	'post_status' => 'publish',
+	'posts_per_page' => 30,
+	'paged' => $paged,
+));
 ?>
 
 <?php get_header(); ?>

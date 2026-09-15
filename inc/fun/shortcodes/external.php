@@ -102,7 +102,7 @@ function argon_shortcode_friend_link_simple($attr,$content=""){
 				$row_tag_open = False;
 				$out .= "</div>";
 			}
-			$out .= "<div class='friend-category-title text-black'>" . $now[1] . "</div>";
+			$out .= "<div class='friend-category-title text-black'>" . esc_html($now[1]) . "</div>";
 		}
 		if ($now[0] == 'link'){
 			if ($row_tag_open == False){
@@ -114,26 +114,26 @@ function argon_shortcode_friend_link_simple($attr,$content=""){
 				<div class='card shadow-sm'>
 					<div class='d-flex'>
 						<div class='friend-link-avatar'>
-							<a target='_blank' href='" . $now[1] . "'>";
+							<a target='_blank' href='" . esc_url($now[1]) . "'>";
 			if (!ctype_space($now[4]) && $now[4] != '' && isset($now[4])){
-				$out .= "<img src='" . $now[4] . "' class='icon bg-gradient-secondary rounded-circle text-white' style='pointer-events: none;'>
+				$out .= "<img src='" . esc_url($now[4]) . "' class='icon bg-gradient-secondary rounded-circle text-white' style='pointer-events: none;'>
 						</img>";
 			}else{
-				$out .= "<div class='icon icon-shape bg-gradient-primary rounded-circle text-white'>" . mb_substr($now[2], 0, 1) . "
+				$out .= "<div class='icon icon-shape bg-gradient-primary rounded-circle text-white'>" . esc_html(mb_substr($now[2], 0, 1)) . "
 						</div>";
 			}
 
 			$out .= "		</a>
 						</div>
 						<div class='pl-3'>
-							<div class='friend-link-title title text-primary'><a target='_blank' href='" . $now[1] . "'>" . $now[2] . "</a>
+							<div class='friend-link-title title text-primary'><a target='_blank' href='" . esc_url($now[1]) . "'>" . esc_html($now[2]) . "</a>
 						</div>";
 			if (!ctype_space($now[3]) && $now[3] != ''  && isset($now[3])){
-				$out .= "<p class='friend-link-description'>" . $now[3] . "</p>";
+				$out .= "<p class='friend-link-description'>" . esc_html($now[3]) . "</p>";
 			}else{
 				/*$out .= "<p class='friend-link-description'>&nbsp;</p>";*/
 			}
-			$out .= "		<a target='_blank' href='" . $now[1] . "' class='text-primary opacity-8'>前往</a>
+			$out .= "		<a target='_blank' href='" . esc_url($now[1]) . "' class='text-primary opacity-8'>前往</a>
 						</div>
 					</div>
 				</div>
@@ -192,7 +192,7 @@ function argon_shortcode_github($attr,$content=""){
 		restore_error_handler();
 	}
 
-	$out = "<div class='github-info-card github-info-card-" . $size . " card shadow-sm' data-author='" . $author . "' data-project='" . $project . "' githubinfo-card-id='" . $github_info_card_id . "' data-getdata='" . $getdata . "' data-description='" . $description . "' data-stars='" . $stars . "' data-forks='" . $forks . "'>";
+	$out = "<div class='github-info-card github-info-card-" . esc_attr($size) . " card shadow-sm' data-author='" . esc_attr($author) . "' data-project='" . esc_attr($project) . "' githubinfo-card-id='" . $github_info_card_id . "' data-getdata='" . esc_attr($getdata) . "' data-description='" . $description . "' data-stars='" . esc_attr($stars) . "' data-forks='" . esc_attr($forks) . "'>";
 	$out .= "<div class='github-info-card-header'><a href='https://github.com/' ref='nofollow' target='_blank' title='Github' no-pjax><span><i class='fa-brands fa-github'></i>";
 	if ($size != "mini"){
 		$out .= " GitHub";
@@ -200,8 +200,8 @@ function argon_shortcode_github($attr,$content=""){
 	$out .= "</span></a></div>";
 	$out .= "<div class='github-info-card-body'>
 			<div class='github-info-card-name-a'>
-				<a href='https://github.com/" . $author . "/" . $project . "' target='_blank' no-pjax>
-					<span class='github-info-card-name'>" . $author . "/" . $project . "</span>
+				<a href='https://github.com/" . esc_attr($author) . "/" . esc_attr($project) . "' target='_blank' no-pjax>
+					<span class='github-info-card-name'>" . esc_html($author) . "/" . esc_html($project) . "</span>
 				</a>
 				</div>
 			<div class='github-info-card-description'></div>
@@ -226,16 +226,16 @@ function argon_shortcode_video($attr,$content=""){
 	$autoplay = isset( $attr['autoplay'] ) ? $attr['autoplay'] : 'false';
 	$out = "<video";
 	if ($width != ''){
-		$out .= " width='" . $width . "'";
+		$out .= " width='" . esc_attr($width) . "'";
 	}
 	if ($height != ''){
-		$out .= " height='" . $height . "'";
+		$out .= " height='" . esc_attr($height) . "'";
 	}
 	if ($autoplay == 'true'){
 		$out .= " autoplay";
 	}
 	$out .= " controls>";
-	$out .= "<source src='" . $url . "'>";
+	$out .= "<source src='" . esc_url($url) . "'>";
 	$out .= "</video>";
 	return $out;
 }

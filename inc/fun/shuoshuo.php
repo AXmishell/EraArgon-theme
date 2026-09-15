@@ -67,6 +67,13 @@ function argon_set_shuoshuo_upvotes($ID){
 function argon_upvote_shuoshuo(){
 	header('Content-Type:application/json; charset=utf-8');
 	$ID = $_POST["shuoshuo_id"];
+	if (!argon_check_upvote_ratelimit()){
+		exit(json_encode(array(
+			'status' => 'failed',
+			'msg' => __('点赞过于频繁，请稍后再试', 'argon'),
+			'total_upvote' => argon_get_shuoshuo_upvotes($ID)
+		)));
+	}
 	$upvotedList = isset( $_COOKIE['argon_shuoshuo_upvoted'] ) ? $_COOKIE['argon_shuoshuo_upvoted'] : '';
 	if (in_array($ID, explode(',', $upvotedList))){
 		exit(json_encode(array(

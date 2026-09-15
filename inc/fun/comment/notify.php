@@ -110,7 +110,7 @@ function argon_post_comment_updatemetas($id){
 		'time' => time(),
 		'isfirst' => true
 	));
-	update_comment_meta($id, "comment_edit_history", addslashes(json_encode($editHistory, JSON_UNESCAPED_UNICODE)));
+	update_comment_meta($id, "comment_edit_history", json_encode($editHistory, JSON_UNESCAPED_UNICODE));
 	//是否启用 Markdown
 	if ($_POST['use_markdown'] == 'true' && get_option("argon_comment_allow_markdown") != "false"){
 		update_comment_meta($id, "use_markdown", "true");

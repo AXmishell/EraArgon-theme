@@ -31,12 +31,30 @@ function argon_is_comment_upvoted($id){
 	}
 	return false;
 }
+function argon_check_upvote_ratelimit(){
+	//按 IP 做服务端限流，配合前端 Cookie 去重，阻止无限刷票（IP 限流可被代理绕过，仅提高门槛）
+	$ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
+	$transient = 'argon_upvote_ratelimit_' . md5($ip);
+	$count = intval(get_transient($transient));
+	if ($count >= 30){
+		return false;
+	}
+	set_transient($transient, $count + 1, 60);
+	return true;
+}
 function argon_upvote_comment(){
 	if (get_option("argon_enable_comment_upvote", "false") != "true"){
 		return;
 	}
 	header('Content-Type:application/json; charset=utf-8');
 	$ID = $_POST["comment_id"];
+	if (!argon_check_upvote_ratelimit()){
+		exit(json_encode(array(
+			'status' => 'failed',
+			'msg' => __('点赞过于频繁，请稍后再试', 'argon'),
+			'total_upvote' => argon_get_comment_upvotes($ID)
+		)));
+	}
 	$comment = get_comment($ID);
 	if ($comment == null){
 		exit(json_encode(array(

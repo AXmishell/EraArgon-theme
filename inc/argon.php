@@ -152,17 +152,3 @@ function argon_post_analytics_info(){
 if (get_option('argon_has_inited') != 'true'){
 	argon_post_analytics_info();
 }
-
-//检测页面底部版权是否被修改
-function argon_alert_footer_copyright_changed(){ ?>
-	<div class='notice notice-warning is-dismissible'>
-		<p><?php _e("警告：你可能修改了 Argon 主题页脚的版权声明，Argon 主题要求你至少保留主题的 Github 链接或主题的发布文章链接。", 'argon');?></p>
-	</div>
-<?php }
-function argon_check_footer_copyright(){
-	$footer = file_get_contents(get_theme_root() . "/" . wp_get_theme() -> template . "/footer.php");
-	if ((strpos($footer, "github.com/solstice23/argon-theme") === false) && (strpos($footer, "solstice23.top") === false)){
-		add_action('admin_notices', 'argon_alert_footer_copyright_changed');
-	}
-}
-argon_check_footer_copyright();

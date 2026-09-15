@@ -62,10 +62,10 @@
 </div>
 <script type="text/javascript">
 	var shareInfo = {
-	    title: '<?php echo addslashes(html_entity_decode(get_the_title())); ?>',
-	    description: '<?php echo addslashes(html_entity_decode(wp_trim_words(html_entity_decode(get_the_content()), 50)));?>',
-	    url: '<?php global $post; echo get_permalink($post -> ID); ?>',
-		origin: '<?php echo get_bloginfo('name'); ?>',
-		source: '<?php echo get_site_url();  ?>',
+	    title: <?php echo wp_json_encode(html_entity_decode(get_the_title()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+	    description: <?php echo wp_json_encode(html_entity_decode(wp_trim_words(html_entity_decode(get_the_content()), 50)), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);?>,
+	    url: <?php global $post; echo wp_json_encode(get_permalink($post -> ID), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+		origin: <?php echo wp_json_encode(get_bloginfo('name'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+		source: <?php echo wp_json_encode(get_site_url(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);  ?>,
 	};
 </script>

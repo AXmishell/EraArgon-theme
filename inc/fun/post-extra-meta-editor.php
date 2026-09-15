@@ -283,7 +283,21 @@ function argon_regenerate_ai_post_summary(): void {
 		return;
 	}
 	header('Content-Type:application/json; charset=utf-8');
-	$post_id = intval($_POST["post_id"]);
+	if (!isset($_POST['post_id'])){
+		status_header(400);
+		exit(json_encode(array(
+			'status' => 'failed',
+			'message' => 'invalid_request'
+		)));
+	}
+	$post_id = intval($_POST['post_id']);
+	if (!current_user_can('edit_post', $post_id)){
+		status_header(403);
+		exit(json_encode(array(
+			'status' => 'failed',
+			'message' => 'forbidden'
+		)));
+	}
 
     argon_update_ai_post_meta( $post_id );
 
@@ -292,4 +306,3 @@ function argon_regenerate_ai_post_summary(): void {
     )));
 }
 add_action('wp_ajax_regenerate_ai_post_summary', 'argon_regenerate_ai_post_summary');
-add_action('wp_ajax_nopriv_regenerate_ai_post_summary', 'argon_regenerate_ai_post_summary');

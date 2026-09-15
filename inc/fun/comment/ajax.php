@@ -9,6 +9,9 @@ function argon_get_comment_edit_history(){
 		)));
 	}
 	$editHistory = json_decode(get_comment_meta($id, "comment_edit_history", true));
+	if (!is_array($editHistory)){
+		$editHistory = array();
+	}
 	$editHistory = array_reverse($editHistory);
 	$res = "";
 	$position = count($editHistory) + 1;
@@ -23,7 +26,7 @@ function argon_get_comment_edit_history(){
 						" . ($edition -> isfirst ? "<span class='badge badge-primary badge-admin'>" . __("最初版本", 'argon') . "</span>" : "") . "
 					</div>
 					<div class='comment-edit-history-time'>" . date('Y-m-d H:i:s', $edition -> time) . "</div>
-					<div class='comment-edit-history-content'>" . str_replace("\n", "</br>", $edition -> content) . "</div>
+					<div class='comment-edit-history-content'>" . nl2br(esc_html($edition -> content)) . "</div>
 				</div>";
 	}
 	exit(json_encode(array(
@@ -96,7 +99,6 @@ function argon_ajax_post_comment(){
 		'id' => $comment -> comment_ID,
 		'parentID' => $comment -> comment_parent,
 		'commentOrder' => (get_option("comment_order") == "" ? "desc" : get_option("comment_order")),
-		'newCaptchaSeed' => $newCaptchaSeed,
 		'newCaptcha' => $newCaptcha,
 		'newCaptchaAnswer' => $newCaptchaAnswer,
 		'isAdmin' => current_user_can('level_7'),
@@ -145,11 +147,11 @@ function argon_user_edit_comment(){
 			$editHistory = array();
 		}
 		array_push($editHistory, array(
-			'content' => htmlspecialchars(stripslashes($contentSource)),
+			'content' => stripslashes($contentSource),
 			'time' => time(),
 			'isfirst' => false
 		));
-		update_comment_meta($id, "comment_edit_history", addslashes(json_encode($editHistory, JSON_UNESCAPED_UNICODE)));
+		update_comment_meta($id, "comment_edit_history", json_encode($editHistory, JSON_UNESCAPED_UNICODE));
 		exit(json_encode(array(
 			'status' => 'success',
 			'msg' => __('编辑评论成功', 'argon'),

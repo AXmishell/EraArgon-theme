@@ -8,7 +8,7 @@ function argon_get_comment_captcha_seed($refresh = false){
 		}
 		return $res;
 	}
-	$captchaSeed = rand(0 , 500000000);
+	$captchaSeed = random_int(0 , 500000000);
 	$_SESSION['captchaSeed'] = $captchaSeed;
 	session_write_close();
 	return $captchaSeed;
@@ -122,10 +122,8 @@ function argon_ajax_get_captcha(){
 	if (get_option('argon_get_captcha_by_ajax', 'false') != 'true') {
 		return;
 	}
-	$seed = argon_get_comment_captcha_seed();
 	exit(json_encode(array(
-		'captcha' => argon_get_comment_captcha($seed),
-		'captchaSeed' => $seed
+		'captcha' => argon_get_comment_captcha(argon_get_comment_captcha_seed())
 	)));
 }
 add_action('wp_ajax_get_captcha', 'argon_ajax_get_captcha');

@@ -380,6 +380,8 @@ function argon_the_content_filter($content){
 	global $post;
 	$custom_css = get_post_meta($post -> ID, 'argon_custom_css', true);
 	if (!empty($custom_css)){
+		//防止自定义 CSS 逃逸 <style> 上下文导致存储型 XSS
+		$custom_css = preg_replace('#</\s*style#i', '', $custom_css);
 		$content .= "<style>" . $custom_css . "</style>";
 	}
 

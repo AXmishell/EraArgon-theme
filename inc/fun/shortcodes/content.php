@@ -48,7 +48,7 @@ function argon_shortcode_progressbar($attr,$content=""){
 	if ($content != ""){
 		$out .= "<div class='progress-label'><span>" . $content . "</span></div>";
 	}
-	$progress = isset( $attr['progress'] ) ? $attr['progress'] : 100;
+	$progress = isset( $attr['progress'] ) ? esc_attr($attr['progress']) : 100;
 	$out .= "<div class='progress-percentage'><span>" . $progress . "%</span></div>";
 	$out .= "</div><div class='progress'><div class='progress-bar";
 	$color = isset( $attr['color'] ) ? $attr['color'] : 'indigo';
@@ -122,11 +122,11 @@ function argon_shortcode_alert($attr,$content=""){
 	}
 	$out .= "'>";
 	if (isset($attr['icon'])){
-		$out .= "<span class='alert-inner--icon'><i class='fa fa-" . $attr['icon'] . "'></i></span>";
+		$out .= "<span class='alert-inner--icon'><i class='fa fa-" . esc_attr($attr['icon']) . "'></i></span>";
 	}
 	$out .= "<span class='alert-inner--text'>";
 	if (isset($attr['title'])){
-		$out .= "<strong>" . $attr['title'] . "</strong> ";
+		$out .= "<strong>" . esc_html($attr['title']) . "</strong> ";
 	}
 	$out .= $content . "</span></div>";
 	return $out;
@@ -166,9 +166,9 @@ function argon_shortcode_admonition($attr,$content=""){
 	if (isset($attr['title'])){
 		$out .= "<div class='admonition-title'>";
 		if (isset($attr['icon'])){
-			$out .= "<i class='fa fa-" . $attr['icon'] . "'></i> ";
+			$out .= "<i class='fa fa-" . esc_attr($attr['icon']) . "'></i> ";
 		}
-		$out .= $attr['title'] . "</div>";
+		$out .= esc_html($attr['title']) . "</div>";
 	}
 	if ($content != ''){
 		$out .= "<div class='admonition-body'>" . $content . "</div>";
@@ -223,9 +223,9 @@ function argon_shortcode_collapse_block($attr,$content=""){
 
 	$out .= "<div class='collapse-block-title'>";
 	if (isset($attr['icon'])){
-		$out .= "<i class='fa fa-" . $attr['icon'] . "'></i> ";
+		$out .= "<i class='fa fa-" . esc_attr($attr['icon']) . "'></i> ";
 	}
-	$out .= "<span class='collapse-block-title-inner'>" . $title . "</span><i class='collapse-icon fa fa-angle-down'></i></div>";
+	$out .= "<span class='collapse-block-title-inner'>" . esc_html($title) . "</span><i class='collapse-icon fa fa-angle-down'></i></div>";
 
 	$out .= "<div class='collapse-block-body'";
 	if ($collapsed != 'false'){
@@ -281,7 +281,7 @@ function argon_shortcode_hidden($attr,$content=""){
 	}
 	$out .= "'";
 	if ($tip != ''){
-		$out .= " title='" . $tip ."'";
+		$out .= " title='" . esc_attr($tip) ."'";
 	}
 	$out .= ">" . $content . "</span>";
 	return $out;
