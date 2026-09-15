@@ -1,0 +1,127 @@
+name: Build & Release EraArgon Theme
+
+# 每周一自动检查主题文件是否有修改；有修改则打包并发布到 GitHub Releases。
+# 也可以在 Actions 页面通过 workflow_dispatch 手动触发。
+on:
+  schedule:
+    # 每周一 01:00 UTC = 北京时间 09:00（周一）
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+# 创建 Release 需要仓库写权限
+permissions:
+  contents: write
+
+# 同一时间只允许一个打包任务，避免定时任务与手动触发重复发布
+concurrency:
+  group: release-eraargon
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 判断自上一个 Release 以来，需要打包的文件是否发生变化
+      - name: Detect changes since last release
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          LATEST_TAG="$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)"
+          if [ -z "$LATEST_TAG" ]; then
+            echo "未找到历史 Release，直接打包。"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "上一个 Release: $LATEST_TAG"
+
+          git fetch --tags --force --quiet || true
+          if ! git rev-parse -q --verify "refs/tags/$LATEST_TAG" >/dev/null; then
+            echo "本地找不到 tag $LATEST_TAG，直接打包。"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # 只比较会被打包进主题的文件：
+          # .github / *.md / composer.* 等被排除的文件即使改动也不算“主题有修改”。
+          if git diff --quiet "$LATEST_TAG" HEAD -- . \
+              ':(exclude).github' \
+              ':(exclude)*.md' \
+              ':(exclude).gitignore' \
+              ':(exclude).gitattributes' \
+              ':(exclude)composer.json' \
+              ':(exclude)composer.lock'; then
+            echo "主题文件无变化，跳过打包。"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "检测到主题文件有修改，开始打包。"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 生成符合 WordPress 主题标准的压缩包：压缩包内顶层目录为 EraArgon/
+      - name: Build WordPress theme package
+        if: steps.detect.outputs.changed == 'true'
+        id: build
+        run: |
+          set -euo pipefail
+
+          DATE="$(TZ=Asia/Shanghai date +%Y%m%d)"   # 打包日期（北京时间 年月日）
+          PKG_NAME="EraArgon-${DATE}"               # 命名规则: EraArgon-年月日
+          THEME_DIR="EraArgon"                       # 主题目录 / 主题名
+          FILELIST="$RUNNER_TEMP/theme-files.txt"
+          ZIP_PATH="$GITHUB_WORKSPACE/${PKG_NAME}.zip"
+
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          echo "pkg_name=$PKG_NAME" >> "$GITHUB_OUTPUT"
+          echo "zip_path=$ZIP_PATH" >> "$GITHUB_OUTPUT"
+
+          # 只收集被 git 跟踪的文件，避免把 node_modules、.omo、.playwright-mcp
+          # 等未跟踪的本地文件打进压缩包；再排除 .github、*.md、composer.* 等不相关文件。
+          git ls-files -z \
+            | grep -zvE '^(\.github/|\.gitignore$|\.gitattributes$|composer\.json$|composer\.lock$)' \
+            | grep -zvE '(^|/)(\.editorconfig|\.eslintrc\.json|\.eslintignore|package\.json|package-lock\.json|postcss\.config\.js|\.gitignore|\.gitattributes)$' \
+            | grep -zvE '\.md$' \
+            > "$FILELIST"
+
+          mkdir -p "build/$THEME_DIR"
+          rsync -a --from0 --files-from="$FILELIST" ./ "build/$THEME_DIR/"
+
+          # 打包时主题命名为 EraArgon
+          sed -i 's/^Theme Name:.*/Theme Name: EraArgon/' "build/$THEME_DIR/style.css"
+
+          # 打包（顶层目录为 EraArgon/，符合 WordPress 主题安装格式）
+          ( cd build && zip -qr "$ZIP_PATH" "$THEME_DIR" -x '*.DS_Store' )
+
+          echo "=== 压缩包顶层内容 ==="
+          unzip -Z1 "$ZIP_PATH" | awk -F/ '{print $1}' | sort -u
+          echo "=== 压缩包大小 ==="
+          du -h "$ZIP_PATH"
+
+      # 发布到 GitHub Releases
+      - name: Publish to GitHub Releases
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          PKG_NAME="${{ steps.build.outputs.pkg_name }}"
+          ZIP_PATH="${{ steps.build.outputs.zip_path }}"
+
+          if gh release view "$PKG_NAME" >/dev/null 2>&1; then
+            echo "Release $PKG_NAME 已存在，跳过发布。"
+            exit 0
+          fi
+
+          gh release create "$PKG_NAME" "$ZIP_PATH" \
+            --title "$PKG_NAME" \
+            --target "$GITHUB_SHA" \
+            --notes "自动打包发布 ${PKG_NAME}（每周一检查，有修改才发布）"
