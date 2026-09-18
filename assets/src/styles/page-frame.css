@@ -114,6 +114,47 @@ html.single-column #open_sidebar {
 		width: calc(100% - 560px);
 		float: left;
 	}
+	/*三栏布局:右侧栏的三个部件各自吸顶并依次向下堆叠(与左侧栏 leftbar_part2 行为一致)
+	  #content 内只有浮动子元素,高度为 0,先形成 BFC(flow-root)以包裹浮动,
+	  并作为定位包含块; #rightbar 绝对定位铺满整列高度,为 sticky 提供足够的滚动区间,
+	  各部件才能依次吸附并保持堆叠*/
+	html.triple-column #content {
+		display: flow-root;
+		position: relative;
+	}
+	html.triple-column #rightbar {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 5px;
+		width: 280px;
+		margin-bottom: 0;
+	}
+	/*A 错峰 + B 惯性递减 + C 回弹:时长与延迟逐块递增,缓动带回弹
+	  (--rightbar-sticky-duration / --rightbar-sticky-delay 由 JS 按顺序写入),
+	  因此三块各自独立、依次级联而非同步位移*/
+	html.triple-column #rightbar > .widget {
+		position: sticky;
+		top: calc(var(--rightbar-sticky-base, 90px) + var(--rightbar-sticky-offset, 0px));
+		transition: top var(--rightbar-sticky-duration, .3s) cubic-bezier(.34, 1.56, .64, 1) var(--rightbar-sticky-delay, 0s);
+	}
+}
+/*尊重系统的"减少动态效果"设置*/
+@media (prefers-reduced-motion: reduce) {
+	html.triple-column #rightbar > .widget {
+		transition: none;
+	}
+}
+/*吸顶基准:90px = 左侧栏固定块 top:80px + 其自身 10px 上外边距,保证两栏顶部对齐*/
+html.triple-column {
+	--rightbar-sticky-base: 90px;
+}
+/*导航栏收回时与左侧栏一起上移到 20px*/
+body.leftbar-can-headroom.headroom---unpinned {
+	--rightbar-sticky-base: 20px;
+}
+html.navbar-absolute {
+	--rightbar-sticky-base: 20px;
 }
 html.triple-column #content {
 	max-width: 1500px;

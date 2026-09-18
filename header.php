@@ -420,7 +420,7 @@
 					<?php $toolbar_icon = get_option('argon_toolbar_icon');
 						$toolbar_icon_link = get_option('argon_toolbar_icon_link');
 						if ($toolbar_icon != '') { /*顶栏ICON(如果选项中开启)*/?>
-						<a class="navbar-brand navbar-icon mr-lg-5" href="<?php echo $toolbar_icon_link; ?>">
+						<a class="navbar-brand navbar-icon mr-2" href="<?php echo $toolbar_icon_link; ?>">
 							<img src="<?php echo $toolbar_icon; ?>">
 						</a>
 					<?php }?>
