@@ -58,11 +58,8 @@ function argon_footer_defaults() {
 	}
 
 	//Argon / EraArgon 署名（GPL v3 / 主题条款要求保留 Argon 名称及链接）
-	$credit = '<div class="site-footer-credit">Theme <a href="https://github.com/solstice23/argon-theme" target="_blank" rel="noopener"><strong>Argon</strong></a> * <a href="https://github.com/AXmishell/EraArgon-theme" target="_blank" rel="noopener"><strong>EraArgon</strong></a>';
-	if ( get_option( 'argon_hide_footer_author' ) != 'true' ) {
-		$credit .= ' By solstice23';
-	}
-	$credit .= '</div>';
+	//作者署名由「页脚附加内容」开关在渲染时动态追加，避免被已保存的 HTML 固定住
+	$credit = '<div class="site-footer-credit">Theme <a href="https://github.com/solstice23/argon-theme" target="_blank" rel="noopener"><strong>Argon</strong></a> * <a href="https://github.com/AXmishell/EraArgon-theme" target="_blank" rel="noopener"><strong>EraArgon</strong></a></div>';
 
 	$defaults = array(
 		'enable'         => 'true',
@@ -95,6 +92,28 @@ function argon_footer_defaults() {
 function argon_footer_default( $key ) {
 	$defaults = argon_footer_defaults();
 	return isset( $defaults[ $key ] ) ? $defaults[ $key ] : '';
+}
+
+//作者署名后缀（由「页脚附加内容」开关控制）
+function argon_footer_author_suffix() {
+	return ( get_option( 'argon_hide_footer_author' ) != 'true' ) ? ' By solstice23&&AXmishell' : '';
+}
+
+/**
+ * 渲染时把作者署名注入署名 div。
+ * 先剥离历史遗留的后缀，保证开关始终生效（即使页脚 HTML 已被保存过）。
+ */
+function argon_footer_apply_author( $html ) {
+	if ( strpos( $html, 'site-footer-credit' ) === false ) {
+		return $html;
+	}
+	$html = str_replace( array( ' By solstice23&&AXmishell', ' By solstice23' ), '', $html );
+	$suffix = argon_footer_author_suffix();
+	if ( $suffix === '' ) {
+		return $html;
+	}
+	$pos = strrpos( $html, '</div>' );
+	return ( $pos === false ) ? $html : substr_replace( $html, $suffix, $pos, 0 );
 }
 
 /**

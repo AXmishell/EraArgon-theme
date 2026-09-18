@@ -22,7 +22,7 @@ if ( argon_get_footer_option( 'enable' ) == 'true' ) :
 	$footer_runtime_start  = argon_get_footer_option( 'runtime_start' );
 	$footer_runtime_type   = argon_get_footer_option( 'runtime_type' );
 	$footer_runtime_label  = argon_get_footer_option( 'runtime_label' );
-	$footer_html           = argon_get_footer_option( 'html' );
+	$footer_html           = argon_footer_apply_author( argon_get_footer_option( 'html' ) );
 
 	if ( $footer_description == '' ) {
 		$footer_description = get_bloginfo( 'description' );
