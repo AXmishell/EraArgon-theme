@@ -71,6 +71,9 @@ require('./pjax');
 //首页无限滚动加载
 require('./home-infinite-scroll');
 
+//第二栏卡片滚动进入视口逐卡落位
+require('./card-reveal');
+
 //Reference 跳转
 require('./article-reference');
 

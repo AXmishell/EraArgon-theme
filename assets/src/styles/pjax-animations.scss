@@ -8,8 +8,14 @@
 		transform: none;
 	}
 }
+:root {
+	/*中间栏(主内容列)统一过渡时间:改这两个值即可调整中间栏的全部过渡——
+	  列本身的 pjax/布局过渡 + 文章卡片落位与 hover,以及落位错峰间隔*/
+	--mid-col-transition-time: 0.3s;
+	--mid-col-reveal-stagger: 45ms;
+}
 #primary {
-	transition: all 0.3s ease;
+	transition: all var(--mid-col-transition-time, 0.3s) ease;
 }
 .card {
 	animation: card-show 0.25s ease-out;

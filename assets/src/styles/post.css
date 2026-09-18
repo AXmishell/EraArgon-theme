@@ -18,6 +18,51 @@
 	opacity: 0;
 	pointer-events: none;
 }
+
+/*第二栏(主内容文章列表)卡片:滚动进入视口时逐卡轻微落位
+  幅度约为第三栏吸顶落位动画的一半(5px / 300ms / 45ms 错峰,无回弹)。
+  gating class 由 JS 在 <head> 中加入,卡片从解析起即为隐藏态,避免首屏闪现;
+  未启用时(JS 关闭 / 不支持 IntersectionObserver / 偏好减少动效)卡片保持原样不动画。
+  过渡时间统一由 --mid-col-transition-time / --mid-col-reveal-stagger 控制(见 pjax-animations.scss)。*/
+html.argon-card-reveal #main.article-list article.post {
+	animation: none;
+	opacity: 0;
+	transform: translateY(5px) scale(.997);
+}
+html.argon-card-reveal #main.article-list article.post.argon-revealed {
+	opacity: 1;
+	transform: none;
+}
+/*瀑布流脚本(waterflow.js)会把内联 transition:none 直接写在卡片上,内联样式优先级高于普通样式,
+  这里用 !important 使其失效;过渡属性只含 opacity/transform/translate/box-shadow,
+  不含 top/left/width,因此瀑布流重排时卡片依旧不会产生滑动动画。*/
+#main.article-list article.post {
+	transition:
+		opacity var(--mid-col-transition-time, .3s) cubic-bezier(.22, .61, .36, 1) var(--argon-reveal-delay, 0s),
+		transform var(--mid-col-transition-time, .3s) cubic-bezier(.22, .61, .36, 1) var(--argon-reveal-delay, 0s),
+		translate var(--mid-col-transition-time, .3s) cubic-bezier(.22, .61, .36, 1),
+		box-shadow var(--mid-col-transition-time, .3s) cubic-bezier(.22, .61, .36, 1) !important;
+}
+/*卡片 hover 微交互:轻微上浮 + 阴影加深(仅精确指针设备)*/
+@media (hover: hover) and (pointer: fine) {
+	#main.article-list article.post:hover {
+		translate: 0 -2px;
+		box-shadow: 0 14px 30px rgba(31, 38, 135, .16), 0 4px 10px rgba(0, 0, 0, .08), inset 1px 1px 0 var(--glass-highlight) !important;
+	}
+	html.darkmode #main.article-list article.post:hover {
+		box-shadow: 0 14px 30px rgba(0, 0, 0, .45), 0 4px 10px rgba(0, 0, 0, .3), inset 1px 1px 0 var(--glass-highlight) !important;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	#main.article-list article.post {
+		transition: none !important;
+	}
+	html.argon-card-reveal #main.article-list article.post {
+		opacity: 1;
+		transform: none;
+		animation: none;
+	}
+}
 .post-title {
 	font-size: 26px;
 	letter-spacing: 0.5px;
