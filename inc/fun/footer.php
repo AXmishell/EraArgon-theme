@@ -24,6 +24,30 @@ function argon_footer_install_time() {
 }
 
 /**
+ * 将「建站时间」（站点本地时间，格式 Y-m-d H:i:s）换算为绝对 Unix 时间戳。
+ * 前端据此计时，避免访客浏览器时区与站点时区不一致导致的运行时间偏移。
+ */
+function argon_footer_local_to_timestamp( $local_time ) {
+	$local_time = trim( (string) $local_time );
+	if ( $local_time === '' ) {
+		return 0;
+	}
+	if ( function_exists( 'wp_timezone' ) ) {
+		try {
+			$datetime = new DateTime( $local_time, wp_timezone() );
+			return $datetime->getTimestamp();
+		} catch ( Exception $e ) {
+			//无法解析时回退到下方按 gmt_offset 换算
+		}
+	}
+	$timestamp = strtotime( $local_time );
+	if ( $timestamp === false ) {
+		return 0;
+	}
+	return (int) ( $timestamp - (float) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
+}
+
+/**
  * 页脚出厂默认值。
  * 后台设置表单与前台 footer.php 共用此来源；只有当用户在后台保存后才会写入数据库。
  */

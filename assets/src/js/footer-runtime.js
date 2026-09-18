@@ -2,12 +2,24 @@
 //页脚由服务端渲染于 Pjax 容器之外，仅初始化一次；功能关闭时该元素不存在，代码安全空转
 var INTERVAL_MS = 1000;
 
-//Safari 无法解析 "YYYY-MM-DD HH:mm:ss"，需将 - 替换为 /
+//data-start 优先为绝对 Unix 时间戳（秒），避免访客浏览器时区与站点时区不一致导致的偏移；
+//同时兼容旧格式 "YYYY-MM-DD HH:mm:ss"
 function parseStart(raw){
-	if (!raw){
+	if (raw === null || raw === undefined){
 		return null;
 	}
-	var date = new Date(String(raw).replace(/-/g, "/"));
+	raw = String(raw).trim();
+	if (raw === ""){
+		return null;
+	}
+	if (/^\d+$/.test(raw)){
+		var fromTimestamp = new Date(parseInt(raw, 10) * 1000);
+		if (!isNaN(fromTimestamp.getTime())){
+			return fromTimestamp;
+		}
+	}
+	//旧格式：Safari 无法解析 "YYYY-MM-DD HH:mm:ss"，需将 - 替换为 /
+	var date = new Date(raw.replace(/-/g, "/"));
 	if (isNaN(date.getTime())){
 		return null;
 	}

@@ -106,7 +106,7 @@ if ( argon_get_footer_option( 'enable' ) == 'true' ) :
 			<?php endif; ?>
 			<?php if ( argon_get_footer_option( 'runtime_enable' ) == 'true' && $footer_runtime_start != '' ) : ?>
 				<div class="site-footer-runtime" id="site-footer-runtime"
-					data-start="<?php echo esc_attr( $footer_runtime_start ); ?>"
+					data-start="<?php echo esc_attr( argon_footer_local_to_timestamp( $footer_runtime_start ) ); ?>"
 					data-type="<?php echo esc_attr( $footer_runtime_type ); ?>"
 					data-label="<?php echo esc_attr( $footer_runtime_label ); ?>"
 					data-days="<?php echo esc_attr( __( '天', 'argon' ) ); ?>"
