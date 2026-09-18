@@ -173,13 +173,10 @@ function argon_settings_section_misc(){
 						<td>
 							<select name="argon_update_source">
 								<?php $argon_update_source = get_option('argon_update_source'); ?>
-								<option value="github" <?php if ($argon_update_source=='github'){echo 'selected';} ?>>Github</option>
-								<option value="fastgit" <?php if ($argon_update_source=='fastgit'){echo 'selected';} ?>>Fastgit</option>
-								<option value="cfworker" <?php if ($argon_update_source=='cfworker'){echo 'selected';} ?>>CF Worker</option>
-								<option value="solstice23top" <?php if ($argon_update_source=='solstice23top'){echo 'selected';} ?>>solstice23.top</option>
+								<option value="github" <?php if ($argon_update_source=='github'){echo 'selected';} ?>>Github (AXmishell/EraArgon-theme)</option>
 								<option value="stop" <?php if ($argon_update_source=='stop'){echo 'selected';} ?>><?php _e('暂停更新 (不推荐)', 'argon');?></option>
 							</select>
-							<p class="description"><?php _e('如更新主题速度较慢，可考虑更换更新源。', 'argon');?></p>
+							<p class="description"><?php _e('主题更新仅从 Github 源检测，指向 AXmishell/EraArgon-theme。', 'argon');?></p>
 						</td>
 					</tr>
 					<tr>

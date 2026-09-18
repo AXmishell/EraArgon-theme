@@ -95,40 +95,15 @@ if (version_compare($argon_last_version, $GLOBALS['theme_version'], '<' )){
 }
 
 
-//检测更新
+//检测更新（仅 Github 源，指向 AXmishell/EraArgon-theme 的 main 分支）
 require_once(get_template_directory() . '/theme-update-checker/plugin-update-checker.php');
 $argon_update_source = get_option('argon_update_source');
-switch ($argon_update_source) {
-	case "stop":
-		break;
-    case "fastgit":
-	    $argonThemeUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-			'https://api.solstice23.top/argon/info.json?source=fastgit',
-			get_template_directory() . '/functions.php',
-			'argon'
-		);
-        break;
-    case "cfworker":
-	    $argonThemeUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-			'https://api.solstice23.top/argon/info.json?source=cfworker',
-			get_template_directory() . '/functions.php',
-			'argon'
-		);
-        break;
-	case "solstice23top":
-		$argonThemeUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-			'https://api.solstice23.top/argon/info.json?source=0',
-			get_template_directory() . '/functions.php',
-			'argon'
-		);
-		break;
-	case "github":
-    default:
-		$argonThemeUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-			'https://raw.githubusercontent.com/solstice23/argon-theme/master/info.json',
-			get_template_directory() . '/functions.php',
-			'argon'
-		);
+if ($argon_update_source != 'stop') {
+	$argonThemeUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+		'https://raw.githubusercontent.com/AXmishell/EraArgon-theme/main/info.json',
+		get_template_directory() . '/functions.php',
+		'argon'
+	);
 }
 
 //初次使用时发送安装量统计信息 (数据仅用于统计安装量)
