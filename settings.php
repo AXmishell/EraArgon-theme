@@ -521,6 +521,8 @@ function argon_update_themeoptions(){
 		argon_update_option('argon_trim_words_count');
 		argon_update_option('argon_enable_comment_upvote');
 		argon_update_option('argon_article_list_waterflow');
+		argon_update_option('argon_home_article_load_mode');
+		argon_update_option('argon_home_articles_per_load');
 		argon_update_option('argon_banner_size');
 		argon_update_option('argon_toolbar_blur');
 		argon_update_option('argon_archives_timeline_show_month');

@@ -149,6 +149,18 @@ if ( get_option( "argon_hide_categories" ) != "" ) {
 	add_action( 'pre_get_posts', 'argon_home_hide_categories' );
 }
 
+//首页文章加载数量：分页加载 / 无限加载 / 更多加载 统一生效（每次加载 = 每页文章数）
+function argon_home_articles_per_load( $query ) {
+	if ( ! is_admin() && is_home() && $query->is_main_query() ) {
+		$perLoad = intval( get_option( 'argon_home_articles_per_load' ) );
+		if ( $perLoad > 0 ) {
+			$query->set( 'posts_per_page', $perLoad );
+		}
+	}
+	return $query;
+}
+add_action( 'pre_get_posts', 'argon_home_articles_per_load' );
+
 //隐藏 admin 管理条
 //show_admin_bar(false);
 

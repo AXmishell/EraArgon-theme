@@ -68,8 +68,8 @@ require('./banner-cover');
 //Pjax
 require('./pjax');
 
-//首页无限滚动加载
-require('./home-infinite-scroll');
+//首页文章加载（分页 / 无限滚动 / 加载更多，模式由 argonConfig.home_load_mode 决定）
+require('./home-load');
 
 //第二栏卡片滚动进入视口逐卡落位
 require('./card-reveal');

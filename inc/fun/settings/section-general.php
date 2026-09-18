@@ -191,6 +191,34 @@ function argon_settings_section_general(){
 						</td>
 					</tr>
 					<tr>
+						<th><label><?php _e('文章加载方式', 'argon');?></label></th>
+						<td>
+							<div class="radio-h">
+								<?php $argon_home_article_load_mode = get_option('argon_home_article_load_mode', 'infinite'); ?>
+								<label>
+									<input name="argon_home_article_load_mode" type="radio" value="pagination" <?php if ($argon_home_article_load_mode=='pagination'){echo 'checked';} ?>>
+									<?php _e('分页加载', 'argon');?>
+								</label>
+								<label>
+									<input name="argon_home_article_load_mode" type="radio" value="infinite" <?php if ($argon_home_article_load_mode=='infinite'){echo 'checked';} ?>>
+									<?php _e('无限加载', 'argon');?>
+								</label>
+								<label>
+									<input name="argon_home_article_load_mode" type="radio" value="loadmore" <?php if ($argon_home_article_load_mode=='loadmore'){echo 'checked';} ?>>
+									<?php _e('更多加载', 'argon');?>
+								</label>
+							</div>
+							<p class="description"><?php _e('分页加载=显示传统页码分页；无限加载=滚动到页面底部自动加载下一页；更多加载=点击"加载更多"按钮手动加载下一页。', 'argon');?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label><?php _e('每次加载文章数', 'argon');?></label></th>
+						<td>
+							<input type="number" name="argon_home_articles_per_load" min="1" max="50" step="1" placeholder="<?php echo get_option('posts_per_page'); ?>" value="<?php echo get_option('argon_home_articles_per_load'); ?>" />
+							<p class="description"><?php _e('首页每页（/ 每次加载）的文章数量，分页加载、无限加载、更多加载均生效。留空则使用 WordPress「设置 → 阅读」中的每页文章数。', 'argon');?></p>
+						</td>
+					</tr>
+					<tr>
 						<th><label><?php _e('文章列表卡片布局', 'argon');?></label></th>
 						<td>
 							<div class="radio-with-img">

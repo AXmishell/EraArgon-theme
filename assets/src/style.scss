@@ -36,6 +36,9 @@ Tags: 简约, 两栏, 侧栏在左边, 浮动侧栏, 文章目录, 自适应, �
 /*页码*/
 @import './styles/pagination.css';
 
+/*首页文章加载（分页/无限滚动/加载更多）*/
+@import './styles/home-load.css';
+
 /*文章*/
 @import './styles/post.css';
 @import './styles/post-password.css';

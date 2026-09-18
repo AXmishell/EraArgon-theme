@@ -68,5 +68,6 @@ export default {
 	"置顶失败": "Failed to pin",
 	"取消置顶失败": "Failed to unpin",
 	"没有更多文章了": "No more articles",
+	"加载更多": "Load more",
 	"加载失败，点击重试": "Failed to load, click to retry",
 };

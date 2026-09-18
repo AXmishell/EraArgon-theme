@@ -1,0 +1,10 @@
+/*首页文章加载：分页 / 无限滚动 / 加载更多*/
+.home-infinite-scroll-sentinel {
+	width: 100%;
+}
+.home-load-more-btn {
+	min-width: 160px;
+}
+.home-load-more .loading-css-animation {
+	margin-top: 12px;
+}

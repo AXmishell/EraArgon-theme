@@ -234,6 +234,7 @@
 			pjax_animation_durtion: <?php echo (get_option("argon_disable_pjax_animation") == 'true' ? '0' : '600'); ?>,
 			headroom: "<?php echo $enable_headroom; ?>",
 			waterflow_columns: "<?php echo get_option('argon_article_list_waterflow', '1'); ?>",
+			home_load_mode: "<?php echo get_option('argon_home_article_load_mode', 'infinite'); ?>",
 			code_highlight: {
 				enable: <?php echo get_option('argon_enable_code_highlight', 'false'); ?>,
 				hide_linenumber: <?php echo get_option('argon_code_highlight_hide_linenumber', 'false'); ?>,
