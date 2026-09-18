@@ -187,8 +187,8 @@ function argon_settings_section_misc(){
 						<td>
 							<select name="argon_hide_footer_author">
 								<?php $argon_hide_footer_author = get_option('argon_hide_footer_author'); ?>
-								<option value="false" <?php if ($argon_hide_footer_author=='false'){echo 'selected';} ?>>Theme Argon By solstice23</option>
-								<option value="true" <?php if ($argon_hide_footer_author=='true'){echo 'selected';} ?>>Theme Argon</option>
+								<option value="false" <?php if ($argon_hide_footer_author=='false'){echo 'selected';} ?>>Theme Argon * EraArgon By solstice23</option>
+								<option value="true" <?php if ($argon_hide_footer_author=='true'){echo 'selected';} ?>>Theme Argon * EraArgon</option>
 							</select>
 							<p class="description"></p>
 						</td>

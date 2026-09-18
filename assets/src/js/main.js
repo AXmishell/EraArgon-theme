@@ -109,3 +109,6 @@ require('./horizontal-scroll');
 
 //Console Info
 require('./console-info');
+
+//站点运行时间
+require('./footer-runtime');

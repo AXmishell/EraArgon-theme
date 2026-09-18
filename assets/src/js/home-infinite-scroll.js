@@ -8,7 +8,7 @@ var $ = window.$;
 const SENTINEL_ID = 'home-infinite-scroll-sentinel';
 const LOADING_DOTS_HTML = "<div class='loading-css-animation'><div class='loading-dot loading-dot-1' ></div><div class='loading-dot loading-dot-2' ></div><div class='loading-dot loading-dot-3' ></div><div class='loading-dot loading-dot-4' ></div><div class='loading-dot loading-dot-5' ></div><div class='loading-dot loading-dot-6' ></div><div class='loading-dot loading-dot-7' ></div><div class='loading-dot loading-dot-8' ></div></div>";
 //首页无限滚动结束后的版权声明（fixed 全宽贴底，复用原 #footer 样式；挂在 body 底部，Pjax 导航不会重建）
-const FOOTER_CREDIT_HTML = "<footer id='footer' class='site-footer card shadow-sm border-0 argon-infinite-scroll-footer'><div>Theme <a href='https://github.com/solstice23/argon-theme' target='_blank' rel='noopener'><strong>Argon</strong></a>" + (window.argonConfig && window.argonConfig.hide_footer_author == true ? "" : " By solstice23") + "</div></footer>";
+const FOOTER_CREDIT_HTML = "<footer id='footer' class='site-footer card shadow-sm border-0 argon-infinite-scroll-footer'><div>Theme <a href='https://github.com/solstice23/argon-theme' target='_blank' rel='noopener'><strong>Argon</strong></a> * <a href='https://github.com/AXmishell/EraArgon-theme' target='_blank' rel='noopener'><strong>EraArgon</strong></a>" + (window.argonConfig && window.argonConfig.hide_footer_author == true ? "" : " By solstice23") + "</div></footer>";
 
 let observer = null;
 let sentinel = null;
@@ -36,7 +36,16 @@ function setLoadingVisible(visible){
 	$(".loading-css-animation", sentinel).toggleClass("d-none", !visible);
 }
 
+//存在服务端渲染的静态全宽页脚时，不再注入固定版权条，避免出现两个页脚
+function hasStaticFooter(){
+	return !!document.getElementById("site-footer");
+}
+
 function ensureFooter(){
+	//已有静态页脚，跳过固定版权条
+	if (hasStaticFooter()){
+		return null;
+	}
 	//版权条挂在 body 底部（fixed 全宽），仅在无限滚动结束时显示
 	if (footerEl && footerEl.parentNode){
 		return footerEl;
@@ -55,10 +64,11 @@ function hideFooter(){
 }
 
 function showFooter(){
-	ensureFooter();
-	if (footerEl){
-		footerEl.classList.add("argon-footer-visible");
+	var el = ensureFooter();
+	if (!el){
+		return;
 	}
+	el.classList.add("argon-footer-visible");
 }
 
 //版权条随"没有更多文章了"元素进出视口而显隐：滚到底部出现，往上返回时自动隐藏

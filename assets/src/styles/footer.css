@@ -41,3 +41,389 @@
 	visibility: visible;
 	transition: transform .35s ease, visibility 0s linear 0s;
 }
+
+/*========== 新全宽站点页脚（zibll 风格） ==========*/
+/*说明：以下规则全部作用域限定在 .site-footer / #site-footer 内，不影响上方 #footer 旧版权条*/
+
+.site-footer {
+	clear: both;
+	position: relative;
+	box-sizing: border-box;
+	width: 100%;
+	margin: 40px 0 0;
+	padding: 34px 0;
+	color: #fff;
+	font-size: 13px;
+	line-height: 1.6;
+	background: var(--themecolor-gradient);
+	border-top: 1px solid var(--glass-border);
+	box-shadow: none;
+	/*微信二维码浮层需要溢出显示，显式声明避免被裁剪*/
+	overflow: visible;
+}
+.site-footer a {
+	color: #fff;
+	text-decoration: none;
+}
+.site-footer a:focus-visible {
+	outline: 2px solid rgba(255, 255, 255, 0.85);
+	outline-offset: 2px;
+}
+
+/*内容区对齐：与 #content 保持一致的 1200 / 1500 宽度上限*/
+.site-footer-inner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	box-sizing: border-box;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 25px;
+	gap: 28px 40px;
+}
+
+/*品牌区*/
+.site-footer-brand {
+	flex: 0 1 300px;
+	min-width: 0;
+	align-self: stretch;
+	display: flex;
+	flex-direction: column;
+}
+/*品牌栏上下两半等高：上=页脚简介，下=Logo*/
+.site-footer-brand-desc,
+.site-footer-brand-logo {
+	flex: 1 1 0;
+	display: flex;
+	min-width: 0;
+}
+.site-footer-brand-desc {
+	align-items: flex-start;
+}
+.site-footer-brand-logo {
+	align-items: flex-end;
+}
+.site-footer-logo,
+.site-footer-logo-text {
+	max-width: 100%;
+}
+.site-footer-logo {
+	display: inline-block;
+	line-height: 0;
+}
+.site-footer-logo img {
+	display: block;
+	height: 40px;
+	width: auto;
+	max-width: 100%;
+	/*单独给页脚 logo 图片设置：底部留 8px，使其与下方简介保持 8px 间距*/
+	margin-bottom: 8px;
+}
+.site-footer-logo-text {
+	display: inline-block;
+	color: #fff;
+	font-size: 22px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+.site-footer-logo-text:hover {
+	color: #fff;
+	text-decoration: none;
+}
+.site-footer-desc {
+	margin: 0;
+	max-width: 320px;
+	font-size: 13px;
+	line-height: 1.7;
+	opacity: .85;
+}
+
+/*信息区：中部自适应增长*/
+.site-footer-info {
+	flex: 1 1 320px;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+/*导航链接*/
+.site-footer-links {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 18px;
+	font-size: 13px;
+}
+.site-footer-link {
+	color: rgba(255, 255, 255, 0.9);
+}
+.site-footer-link:hover {
+	color: #fff;
+	text-decoration: underline;
+}
+
+/*版权与备案信息*/
+.site-footer-copyright {
+	font-size: 13px;
+	opacity: .85;
+}
+.site-footer-records {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	row-gap: 6px;
+	font-size: 13px;
+	opacity: .85;
+}
+.site-footer-record {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-right: 14px;
+	color: #fff;
+}
+.site-footer-record:hover {
+	color: #fff;
+	text-decoration: underline;
+}
+
+/*运行时间：等宽数字避免秒数跳动引起抖动*/
+.site-footer-runtime {
+	font-size: 13px;
+	opacity: .9;
+}
+.site-footer-runtime-label {
+	opacity: .85;
+}
+.site-footer-runtime-value {
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: "tnum";
+}
+
+/*联系按钮*/
+.site-footer-contact {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+.site-footer-contact-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.18);
+	color: #fff;
+	font-size: 15px;
+	line-height: 1;
+	-webkit-tap-highlight-color: transparent;
+	transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+.site-footer-contact-btn i {
+	line-height: 1;
+}
+.site-footer-contact-btn:hover {
+	background: rgba(255, 255, 255, 0.32);
+	color: #fff;
+	text-decoration: none;
+	transform: translateY(-2px);
+}
+.site-footer-contact-btn:active {
+	transform: translateY(0);
+}
+
+/*微信悬浮二维码*/
+.site-footer-contact-wechat {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+.site-footer-wechat-pop {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 12px);
+	z-index: 20;
+	box-sizing: border-box;
+	padding: 8px;
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	line-height: 0;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+	transform: translate(-50%, 6px);
+	transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+}
+.site-footer-contact-wechat:hover .site-footer-wechat-pop,
+.site-footer-contact-wechat:focus-within .site-footer-wechat-pop {
+	opacity: 1;
+	visibility: visible;
+	transform: translate(-50%, 0);
+	transition: opacity .2s ease, transform .2s ease, visibility 0s linear 0s;
+}
+.site-footer-wechat-pop::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	transform: translateX(-50%);
+	border: 6px solid transparent;
+	border-top-color: #fff;
+	border-bottom-width: 0;
+}
+.site-footer-wechat-pop img {
+	display: block;
+	width: 120px;
+	height: auto;
+	border-radius: 4px;
+}
+
+/*二维码组*/
+.site-footer-qrcodes {
+	flex: 0 0 auto;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 18px;
+}
+.site-footer-qrcode {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.site-footer-qrcode img {
+	display: block;
+	box-sizing: border-box;
+	width: 108px;
+	height: 108px;
+	object-fit: cover;
+	padding: 4px;
+	border-radius: 8px;
+	background: #fff;
+}
+.site-footer-qrcode-caption {
+	margin-top: 6px;
+	font-size: 12px;
+	text-align: center;
+	opacity: .85;
+}
+
+/*自定义 HTML 区域*/
+.site-footer-custom-html {
+	box-sizing: border-box;
+	max-width: 1200px;
+	margin: 12px auto 0;
+	padding: 0 25px;
+	font-size: 13px;
+	text-align: center;
+	opacity: .9;
+}
+
+/*Argon 署名左对齐，与品牌栏左缘对齐*/
+.site-footer-credit {
+	text-align: left;
+}
+
+/*大屏下与 #content 同步放宽*/
+@media screen and (min-width: 1700px) {
+	.site-footer-inner,
+	.site-footer-custom-html {
+		max-width: 1500px;
+	}
+}
+
+/*平板 / 移动端：纵向堆叠*/
+@media screen and (max-width: 900px) {
+	.site-footer {
+		margin-top: 28px;
+		padding: 26px 0;
+	}
+	.site-footer-inner {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 22px 0;
+	}
+	.site-footer-brand,
+	.site-footer-info,
+	.site-footer-qrcodes {
+		flex: 0 0 auto;
+		width: 100%;
+	}
+	.site-footer-brand {
+		align-self: auto;
+	}
+	.site-footer-brand-desc,
+	.site-footer-brand-logo {
+		flex: 0 0 auto;
+	}
+	.site-footer-brand,
+	.site-footer-desc {
+		max-width: none;
+	}
+	.site-footer-qrcodes {
+		justify-content: flex-start;
+	}
+}
+
+/*小屏手机*/
+@media screen and (max-width: 560px) {
+	.site-footer-inner,
+	.site-footer-custom-html {
+		padding: 0 18px;
+	}
+	.site-footer-contact-btn {
+		width: 30px;
+		height: 30px;
+		font-size: 14px;
+	}
+	.site-footer-qrcode img {
+		width: 96px;
+		height: 96px;
+	}
+	.site-footer-wechat-pop img {
+		width: 104px;
+	}
+}
+
+/*========== 夜间模式 ==========*/
+html.darkmode .site-footer {
+	background-color: #1b1b22;
+	background-image: linear-gradient(150deg, rgba(var(--themecolor-rgbstr), 0.30) 0%, rgba(var(--themecolor-rgbstr), 0.12) 55%, rgba(0, 0, 0, 0.28) 100%);
+	border-top-color: var(--glass-border);
+	box-shadow: none;
+}
+/*夜间模式下覆盖全局 a 颜色，保证白色文字足够醒目*/
+html.darkmode .site-footer a {
+	color: #fff;
+}
+html.darkmode .site-footer-contact-btn {
+	background: rgba(255, 255, 255, 0.14);
+}
+html.darkmode .site-footer-contact-btn:hover {
+	background: rgba(255, 255, 255, 0.26);
+}
+
+/*========== AMOLED 纯黑模式 ==========*/
+html.darkmode.amoled-dark .site-footer {
+	background-color: #000;
+	background-image: none;
+}
+
+/*动效减弱偏好*/
+@media (prefers-reduced-motion: reduce) {
+	.site-footer .site-footer-contact-btn,
+	.site-footer .site-footer-wechat-pop {
+		transition: none;
+	}
+	.site-footer .site-footer-contact-btn:hover {
+		transform: none;
+	}
+}

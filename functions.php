@@ -24,6 +24,9 @@ require get_template_directory() . '/inc/fun/shortcodes.php';
 // 注册小工具
 require get_template_directory() . '/inc/fun/widgets.php';
 
+// 页脚默认值与运行时间
+require get_template_directory() . '/inc/fun/footer.php';
+
 // 注册 shuoshuo 及其配套功能
 require get_template_directory() . '/inc/fun/shuoshuo.php';
 
