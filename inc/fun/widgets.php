@@ -15,7 +15,7 @@ function argon_widgets_init() {
 		array(
 			'name'          => __('右侧栏小工具', 'argon'),
 			'id'            => 'rightbar-tools',
-			'description'   => __( '右侧栏小工具 (在 "Argon 主题选项" 中选择 "三栏布局" 才会显示)', 'argon'),
+			'description'   => __( '右侧栏小工具 (在 "EraArgon 主题设置" 中选择 "三栏布局" 才会显示)', 'argon'),
 			'before_widget' => '<div id="%1$s" class="widget %2$s card shadow-sm bg-white border-0">',
 			'after_widget'  => '</div>',
 			'before_title'  => '<h6 class="font-weight-bold text-black">',

@@ -44,7 +44,7 @@ if (get_option('argon_enable_login_css') == 'true'){
 //主题选项页面
 function argon_themeoptions_admin_menu(){
 	/*后台管理面板侧栏添加选项*/
-	add_menu_page(__("Argon 主题设置", 'argon'), __("Argon 主题选项", 'argon'), 'edit_theme_options', basename(__FILE__), 'argon_themeoptions_page');
+	add_menu_page(__("EraArgon 主题设置", 'argon'), __("EraArgon<br>主题设置", 'argon'), 'edit_theme_options', basename(__FILE__), 'argon_themeoptions_page');
 }
 add_action('admin_menu', 'argon_themeoptions_admin_menu');
 include_once(get_template_directory() . '/settings.php');
